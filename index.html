@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F9CBDA">
 <meta name="robots" content="noindex">
-<title>Sổ Huyền Cake</title>
+<title>Huyền Cake &amp; Flowers</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23B8235A'/%3E%3Cpath d='M8 23v-7h16v7zM11 16v-4h10v4M16 12V8' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -110,7 +110,7 @@ label.f textarea{min-height:70px;resize:vertical}
 .stat b{display:block;font-size:21px;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .stat.hero{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .stat.hero span{color:inherit}
-@media (max-width:520px){.stats{grid-template-columns:1fr 1fr}.stats .stat.hero{grid-column:1/-1;order:-1}}
+@media (max-width:520px){.stats{grid-template-columns:1fr 1fr}.stats .stat.wide{grid-column:1/-1}.stats .stat.hero{grid-column:1/-1;order:-1}}
 
 /* tickets */
 .list{display:flex;flex-direction:column;gap:8px}
@@ -149,7 +149,8 @@ button.row:hover{background:var(--sunken)}
 .stepper input{width:46px;height:42px;border:0;background:none;text-align:center;font-size:16px;font-variant-numeric:tabular-nums;font-weight:600;-moz-appearance:textfield;padding:0}
 .stepper input::-webkit-inner-spin-button{appearance:none}
 .sticky-total{position:sticky;bottom:0;z-index:5;background:var(--ink);color:var(--bg);border-radius:var(--r);padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:600}
-.sticky-total b{font-size:19px;font-variant-numeric:tabular-nums}
+.sticky-total b{font-size:19px;font-variant-numeric:tabular-nums;white-space:nowrap}
+main input{scroll-margin-bottom:150px}
 @media (max-width:759px){.sticky-total{bottom:calc(66px + env(safe-area-inset-bottom,0px))}}
 
 /* table + chart */
@@ -201,6 +202,25 @@ dialog::backdrop{background:rgba(30,10,22,.55)}
 .who button{background:none;border:0;padding:4px 2px;color:inherit;text-decoration:underline;text-underline-offset:3px;font-size:12.5px}
 .login{max-width:380px;margin:24px auto;display:flex;flex-direction:column;gap:14px;text-align:center;align-items:stretch}
 .login h1{font-size:22px;font-weight:700;line-height:1.3}
+.stat small{display:block;font-size:12.5px;color:var(--muted);line-height:1.35;font-weight:500;font-variant-numeric:tabular-nums}
+.stat.hero small{color:inherit;opacity:.9}
+.tl{display:flex;flex-direction:column;gap:3px;align-items:flex-start;font-size:14.5px;overflow-wrap:anywhere}
+mark.tnote{display:block;background:var(--warn-soft);color:var(--ink);font-weight:700;font-size:15px;line-height:1.35;border-radius:6px;padding:3px 9px;overflow-wrap:anywhere;max-width:100%}
+.mi{position:relative;display:block}
+.mi input{padding-right:30px!important}
+.mi i{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:600;color:var(--muted);pointer-events:none}
+.rowmain{flex:1;min-width:0;background:none;border:0;padding:0;text-align:left;display:flex;align-items:center;gap:10px}
+.rowmain:hover{color:var(--accent)}
+.btn.sm.danger.armed{background:var(--bad);border-color:var(--bad);color:var(--bg)}
+.gcards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;min-width:0}
+.gcard h3{margin:0 0 6px;font-size:15px}
+.gcard div{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:2px 0;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.gcard div.g{font-weight:700;border-top:1px solid var(--line);margin-top:4px;padding-top:6px}
+@media (max-width:640px){.gcards{grid-template-columns:1fr}}
+.sug{display:flex;flex-wrap:wrap;gap:6px}
+.sug:empty{display:none}
+.paybtn{min-height:56px;font-size:16px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -210,7 +230,7 @@ dialog::backdrop{background:rgba(30,10,22,.55)}
 
 <header class="band">
   <div class="band-in">
-    <div class="brand">Huyền Cake</div>
+    <div class="brand">Huyền Cake &amp; Flowers</div>
     <div class="who" id="who" hidden></div><div class="sync busy" id="sync" role="status"><i></i><span>Đang tải…</span></div>
     <nav class="tabs" id="tabs" aria-label="Các mục chính"></nav>
   </div>
@@ -240,54 +260,76 @@ function priceAt(p,date){
   for(const e of list)if(e.from<=date)cur=e;
   return cur.price;
 }
-/* Chia tiền một dòng cho bánh và hoa. Combo chia theo % phần hoa. */
-function split(amount,group,hoaPct){
-  if(group==='hoa')return{banh:0,hoa:amount};
-  if(group==='combo'){const hoa=Math.round(amount*(hoaPct??50)/100);return{banh:amount-hoa,hoa}}
-  return{banh:amount,hoa:0};
-}
 const orderTotal=o=>(o.lines||[]).reduce((s,l)=>s+(l.qty||0)*(l.price||0),0);
-const orderLeft=o=>o.paidFull?0:Math.max(0,orderTotal(o)-(o.deposit||0));
+/* Các lần thu tiền của đơn. Đơn nhập trước bản này có deposit/paidFull, chưa ghi hình thức. */
+function paysOf(o){
+  if(Array.isArray(o.payments))return o.payments;
+  if(o.paidFull)return[{date:o.date,amount:orderTotal(o),method:null}];
+  if(o.deposit)return[{date:o.date,amount:o.deposit,method:null}];
+  return[];
+}
+const orderPaid=o=>paysOf(o).reduce((s,p)=>s+(p.amount||0),0);
+const orderLeft=o=>Math.max(0,orderTotal(o)-orderPaid(o));
 function retailTotal(doc,products,date){
-  let t=(doc?.otherBanh||0)+(doc?.otherHoa||0);
+  let t=(doc?.otherBanh||0)+(doc?.otherHoa||0)+(doc?.otherCombo||0);
   for(const[pid,q]of Object.entries(doc?.items||{}))t+=(q||0)*priceAt(products[pid],date);
   return t;
 }
-/* Tổng hợp các tháng. Doanh thu đơn đặt được tính khi đơn ở trạng thái Đã giao, theo ngày giao. */
+const normName=s=>(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+function customerKey(name,contact){
+  const d=(contact||'').replace(/\D/g,'');
+  if(d.length>=8)return't'+d;
+  const n=normName(name);
+  return n?'n'+encodeURIComponent(n).replace(/[%.]/g,'_'):null;
+}
+function mergeCustomer(prev,o){
+  const list=[...(prev?.addresses||[])],a=(o.address||'').trim();
+  const addresses=o.ship&&a?[a,...list.filter(x=>normName(x)!==normName(a))].slice(0,10):list;
+  return{name:(o.customer||'').trim()||prev?.name||'',contact:(o.contact||'').trim()||prev?.contact||'',addresses,lastDate:(prev?.lastDate||'')>o.date?prev.lastDate:o.date};
+}
+/* Doanh thu = mọi đơn chưa hủy có ngày giao trong kỳ + bán lẻ trong kỳ.
+   got: tiền đã nhận của chính phần doanh thu đó. flow: tiền thực nhận theo ngày thu. */
 function summarize(months,products,sources,from='0000',to='9999'){
-  const s={rev:{banh:0,hoa:0},cost:{banh:0,hoa:0,chung:0},retail:0,orders:0,pending:0,pendingCount:0,doneCount:0,byItem:{},bySource:{},customers:{}};
-  const add=(name,qty,amt,group,pct)=>{const x=split(amt,group,pct);s.rev.banh+=x.banh;s.rev.hoa+=x.hoa;const b=s.byItem[name]||(s.byItem[name]={qty:0,amt:0});b.qty+=qty;b.amt+=amt};
+  const zero=()=>({tm:0,ck:0,na:0});
+  const s={rev:{banh:0,hoa:0,combo:0},cost:{banh:0,hoa:0,combo:0,chung:0},retail:0,orders:0,orderCount:0,left:0,got:zero(),flow:zero(),byItem:{},bySource:{},customers:{}};
+  const add=(name,qty,amt,group)=>{const g=s.rev[group]===undefined?'banh':group;s.rev[g]+=amt;const b=s.byItem[name]||(s.byItem[name]={qty:0,amt:0});b.qty+=qty;b.amt+=amt};
   const inR=d=>d>=from&&d<=to;
   for(const m of months){
     for(const[date,doc]of Object.entries(m.retail||{})){
       if(!inR(date))continue;
+      let day=0;
       for(const[pid,q]of Object.entries(doc.items||{})){
         if(!q)continue;const p=products[pid];const amt=q*priceAt(p,date);
-        add(p?.name||'Sản phẩm đã xóa',q,amt,p?.group||'banh',p?.hoaPct);s.retail+=amt;
+        add(p?.name||'Sản phẩm đã xóa',q,amt,p?.group||'banh');day+=amt;
       }
-      if(doc.otherBanh){add('Bán khác (bánh)',0,doc.otherBanh,'banh');s.retail+=doc.otherBanh}
-      if(doc.otherHoa){add('Bán khác (hoa)',0,doc.otherHoa,'hoa');s.retail+=doc.otherHoa}
+      for(const[k,g,l]of[['otherBanh','banh','bánh'],['otherHoa','hoa','hoa'],['otherCombo','combo','combo']])
+        if(doc[k]){add('Bán khác ('+l+')',0,doc[k],g);day+=doc[k]}
+      s.retail+=day;
+      const ck=Math.min(doc.ck||0,day);
+      s.got.ck+=ck;s.got.tm+=day-ck;s.flow.ck+=ck;s.flow.tm+=day-ck;
     }
     for(const o of Object.values(m.orders||{})){
-      if(!inR(o.date)||o.status==='huy')continue;
+      if(o.status==='huy')continue;
+      for(const p of paysOf(o))if(inR(p.date))s.flow[p.method||'na']+=p.amount||0;
+      if(!inR(o.date))continue;
       const t=orderTotal(o);
-      if(o.status==='xong'){
-        s.orders+=t;s.doneCount++;
-        for(const l of o.lines||[])add(l.name||'Đơn tự ghi',l.qty||0,(l.qty||0)*(l.price||0),l.group||'banh',l.hoaPct);
-        const k=(o.customer||'').trim();
-        if(k){const c=s.customers[k]||(s.customers[k]={n:0,amt:0,contact:o.contact||''});c.n++;c.amt+=t}
-      }else{s.pending+=t;s.pendingCount++}
+      s.orders+=t;s.orderCount++;s.left+=orderLeft(o);
+      for(const p of paysOf(o))s.got[p.method||'na']+=p.amount||0;
+      for(const l of o.lines||[])add(l.name||'Món khác',l.qty||0,(l.qty||0)*(l.price||0),l.group||'banh');
+      const k=(o.customer||'').trim();
+      if(k){const c=s.customers[k]||(s.customers[k]={n:0,amt:0,contact:o.contact||''});c.n++;c.amt+=t}
     }
     for(const e of Object.values(m.purchases||{})){
       if(!inR(e.date))continue;
-      const src=sources[e.sourceId];const g=src?.group||'chung';
+      const src=sources[e.sourceId];const g=s.cost[src?.group]===undefined?'chung':src.group;
       s.cost[g]+=e.amount||0;
       const n=src?.name||'Nguồn đã xóa';s.bySource[n]=(s.bySource[n]||0)+(e.amount||0);
     }
   }
-  s.revTotal=s.rev.banh+s.rev.hoa;
-  s.costTotal=s.cost.banh+s.cost.hoa+s.cost.chung;
+  s.revTotal=s.rev.banh+s.rev.hoa+s.rev.combo;
+  s.costTotal=s.cost.banh+s.cost.hoa+s.cost.combo+s.cost.chung;
   s.profit=s.revTotal-s.costTotal;
+  s.received=s.got.tm+s.got.ck+s.got.na;
   return s;
 }
 /*END*/
@@ -302,7 +344,10 @@ const ICON={
 const TABS=[['homnay','Hôm nay'],['don','Đơn đặt'],['banle','Bán lẻ'],['nhap','Nhập hàng'],['baocao','Báo cáo'],['banggia','Bảng giá']];
 const STATUS={moi:'Chưa làm',dang:'Đang làm',xong:'Đã giao',huy:'Đã hủy'};
 const GROUP={banh:'Bánh',hoa:'Hoa',combo:'Combo'};
-const COST={banh:'Nguyên liệu bánh',hoa:'Nhập hoa',chung:'Chi chung'};
+const COST={banh:'Nguyên liệu bánh',hoa:'Nhập hoa',combo:'Nhập cho combo',chung:'Chi chung'};
+const METHOD={tm:'Tiền mặt',ck:'Chuyển khoản'};
+const mi=(id,attrs,val)=>`<span class="mi"><input id="${id}" data-money inputmode="numeric" autocomplete="off" ${attrs} value="${fmtInput(val)}" placeholder="0"><i>đ</i></span>`;
+const splitLine=g=>`Tiền mặt ${money(g.tm)} · Chuyển khoản ${money(g.ck)}${g.na?` · Chưa ghi hình thức ${money(g.na)}`:''}`;
 const KINDS=['orders','retail','purchases'];
 
 const pad=n=>String(n).padStart(2,'0');
@@ -311,9 +356,9 @@ const workDay=()=>{const t=realToday();return t<START?START:t};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=id=>document.getElementById(id);
 
-let db=null,uid=null,dl=null,readOnly=false;
-const state={view:'homnay',ym:ymOf(workDay()),day:workDay(),st:'all',q:'',repYear:Number(workDay().slice(0,4)),repMonth:'all',priceTab:'sp',yearReady:false};
-const P={products:{},sources:{}};let catalogReady=false;
+let db=null,uid=null,dl=null;
+const state={view:'homnay',ym:ymOf(workDay()),day:workDay(),st:'all',q:'',repYear:Number(workDay().slice(0,4)),repMonth:'all',priceTab:'banh',og:'all',rg:'banh',cq:'',yearReady:false};
+const P={products:{},sources:{},customers:{}};let catalogReady=false;
 const M={};const watching={};
 const data=ym=>M[ym]||(M[ym]={orders:{},retail:{},purchases:{},ready:new Set()});
 const isReady=ym=>data(ym).ready.size===KINDS.length;
@@ -347,7 +392,7 @@ function watch(ym){
 }
 function focusMonths(){watch(state.ym);watch(shiftYm(state.ym,1));const t=ymOf(workDay());watch(t);watch(shiftYm(t,1))}
 let loadT;
-function noteLoaded(){if(catalogReady&&isReady(state.ym)){clearTimeout(loadT);setSync('',readOnly?'Chỉ xem':'Đã đồng bộ')}}
+function noteLoaded(){if(catalogReady&&isReady(state.ym)){clearTimeout(loadT);setSync('','Đã đồng bộ')}}
 function armLoadTimer(){clearTimeout(loadT);loadT=setTimeout(()=>{if(!isReady(state.ym))setSync('off','Chưa kết nối được, số liệu có thể cũ')},10000)}
 
 let rq=false,deferred=false;
@@ -356,17 +401,19 @@ function typing(){const a=document.activeElement;return a&&$('view').contains(a)
 function render(){
   if(typing()){deferred=true;return}
   const fid=document.activeElement?.id;
-  $('view').innerHTML=({homnay:vHome,don:vOrders,banle:vRetail,nhap:vPurchases,baocao:vReport,banggia:vPrices}[state.view])();
+  $('view').innerHTML=({homnay:vHome,don:vOrders,khach:vCustomers,banle:vRetail,nhap:vPurchases,baocao:vReport,banggia:vPrices}[state.view])();
   if(state.view==='baocao')bindChart();
   if(fid&&$(fid)&&$('view').contains($(fid)))$(fid).focus({preventScroll:true});
   if($('sheet').open&&sheetOnData)sheetOnData();
 }
 function renderTabs(){
-  $('tabs').innerHTML=TABS.map(([k,l])=>`<a href="#${k}" ${state.view===k?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg><span>${l}</span></a>`).join('');
+  $('tabs').innerHTML=TABS.map(([k,l])=>`<a href="#${k}" ${state.view===k||(state.view==='khach'&&k==='don')?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg><span>${l}</span></a>`).join('');
 }
+const VIEWS=[...TABS.map(t=>t[0]),'khach'];
 function route(){
-  const h=location.hash.slice(1);state.view=TABS.some(t=>t[0]===h)?h:'homnay';
-  renderTabs();render();window.scrollTo(0,0);
+  const h=location.hash.slice(1);state.view=VIEWS.includes(h)?h:'homnay';
+  if($('view').contains(document.activeElement))document.activeElement.blur();
+  deferred=false;renderTabs();render();window.scrollTo(0,0);
   if(state.view==='baocao')loadYear();
 }
 const monthSw=()=>{const[y,m]=state.ym.split('-');return`<div class="switch"><button data-act="ym" data-k="-1" aria-label="Tháng trước" ${state.ym<=START_YM?'disabled':''}>‹</button><b class="num">Tháng ${+m}/${y}</b><button data-act="ym" data-k="1" aria-label="Tháng sau">›</button></div>`};
@@ -374,19 +421,23 @@ const monthSw=()=>{const[y,m]=state.ym.split('-');return`<div class="switch"><bu
 const productsSorted=()=>Object.entries(P.products).map(([id,p])=>({id,...p})).sort((a,b)=>(a.o||999)-(b.o||999)||a.name.localeCompare(b.name,'vi'));
 const sourcesSorted=()=>Object.entries(P.sources).map(([id,s])=>({id,...s})).sort((a,b)=>(a.o||999)-(b.o||999)||a.name.localeCompare(b.name,'vi'));
 
-function ticket(id,o,opts={}){
-  const t=orderTotal(o),left=orderLeft(o),late=o.date<realToday()&&(o.status==='moi'||o.status==='dang');
-  const desc=(o.lines||[]).map(l=>`${l.qty>1?l.qty+' × ':''}${esc(l.name||'Tự ghi')}${l.note?' ('+esc(l.note)+')':''}`).join(', ');
+function ticket(id,o){
+  const t=orderTotal(o),left=orderLeft(o),paid=orderPaid(o),ym=ymOf(o.date),late=o.date<realToday()&&(o.status==='moi'||o.status==='dang');
+  const lines=(o.lines||[]).map(l=>`<div class="tl"><span>${l.qty>1?l.qty+' × ':''}${esc(l.name||'Món khác')}</span>${l.note?`<mark class="tnote">${esc(l.note)}</mark>`:''}</div>`).join('');
+  const how=[...new Set(paysOf(o).map(p=>p.method).filter(Boolean))].map(m=>METHOD[m]).join(' + ');
   return`<article class="ticket ${o.status==='xong'||o.status==='huy'?'done':''}">
    <div class="when"><b>${esc(o.time)||dm(o.date)}</b><span>${o.time?dm(o.date):wd(o.date)}</span></div>
    <div class="body">
-    <div class="tline"><button class="tname" data-act="order" data-id="${id}" data-ym="${ymOf(o.date)}">${esc(o.customer)||'Khách lẻ'}</button><span class="num" style="font-weight:600">${money(t)}</span></div>
-    <div class="tdesc">${desc||'Chưa ghi món'}${o.ship?' · Giao'+(o.address?': '+esc(o.address):''):' · Khách lấy'}</div>
+    <div class="tline"><button class="tname" data-act="order" data-id="${id}" data-ym="${ym}">${esc(o.customer)||'Khách lẻ'}</button><span class="num" style="font-weight:600">${money(t)}</span></div>
+    ${lines||'<div class="tdesc">Chưa ghi món</div>'}
+    <div class="tdesc">${o.ship?'Giao: '+(esc(o.address)||'chưa ghi địa chỉ'):'Khách lấy'}${o.contact?' · '+esc(o.contact):''}</div>
+    ${o.note?`<mark class="tnote">${esc(o.note)}</mark>`:''}
     <div class="tact"><span class="pill ${late?'late':o.status}">${late?'Quá hẹn':STATUS[o.status]}</span>
-     ${o.status==='huy'?'':left>0?`<span class="small muted num">Còn thu ${money(left)}</span>`:'<span class="small muted">Đã thu đủ</span>'}
+     ${o.status==='huy'?'':left>0?`<span class="small muted num">${paid?`Đã nhận ${money(paid)} · `:''}Còn thu ${money(left)}</span>`:`<span class="small muted">Đã thu đủ${how?' · '+how:''}</span>`}
      <span style="flex:1"></span>
-     ${readOnly||o.status==='huy'?'':(left>0?`<button class="btn sm" data-act="paid" data-id="${id}" data-ym="${ymOf(o.date)}">Thu đủ</button>`:'')}
-     ${readOnly||o.status==='xong'||o.status==='huy'?'':`<button class="btn sm primary" data-act="done" data-id="${id}" data-ym="${ymOf(o.date)}">Đã giao</button>`}
+     <button class="btn sm danger" data-act="armdel" data-kind="orders" data-id="${id}" data-ym="${ym}">Xóa</button>
+     ${o.status==='huy'||left<=0?'':`<button class="btn sm" data-act="pay" data-id="${id}" data-ym="${ym}">Thu đủ</button>`}
+     ${o.status==='xong'||o.status==='huy'?'':`<button class="btn sm primary" data-act="done" data-id="${id}" data-ym="${ym}">Đã giao</button>`}
     </div>
    </div></article>`;
 }
@@ -395,7 +446,7 @@ const orderSort=(a,b)=>(a[1].date+(a[1].time||'99')).localeCompare(b[1].date+(b[
 function vHome(){
   const d=workDay(),ym=ymOf(d),cat=[P.products,P.sources];
   const mm=[data(ym)],next=data(shiftYm(ym,1));
-  const today=summarize(mm,...cat,d,d),mon=summarize(mm,...cat);
+  const today=summarize(mm,...cat,d,d),mon=summarize(mm,...cat,ym+'-01',d);
   const all=[...Object.entries(mm[0].orders),...Object.entries(next.orders)];
   const open=o=>o.status==='moi'||o.status==='dang';
   const late=all.filter(([,o])=>o.date<realToday()&&open(o)).sort(orderSort);
@@ -403,14 +454,13 @@ function vHome(){
   const soon=all.filter(([,o])=>o.date>d&&o.date<=shiftDay(d,7)&&open(o)).sort(orderSort);
   const preStart=realToday()<START;
   return`<div class="head"><h1>${preStart?'Sổ bắt đầu từ 01/01/2027':`${wd(d)}, ${dmy(d)}`}</h1>
-    ${readOnly?'':`<button class="btn" data-act="purchase">Nhập hàng</button><button class="btn primary" data-act="order">Thêm đơn</button>`}</div>
-  ${preStart?'<p class="muted">Bạn đã có thể nhận trước các đơn giao từ tháng 1/2027. Số liệu dưới đây là của ngày 01/01/2027.</p>':''}
+    <button class="btn" data-act="purchase">Nhập hàng</button><button class="btn primary" data-act="order">Thêm đơn</button></div>
   <div class="stats">
-    <div class="stat hero"><span>Lợi nhuận tháng ${+ym.slice(5)}</span><b>${money(mon.profit)}</b></div>
-    <div class="stat"><span>Doanh thu tháng</span><b>${money(mon.revTotal)}</b></div>
-    <div class="stat"><span>Tiền nhập tháng</span><b>${money(mon.costTotal)}</b></div>
+    <div class="stat hero"><span>Doanh thu ngày ${dm(d)}</span><b>${money(today.revTotal)}</b><small>Đơn đặt ${money(today.orders)} · Bán lẻ ${money(today.retail)}</small></div>
+    <div class="stat"><span>Đã nhận</span><b>${money(today.received)}</b><small>Còn thiếu ${money(today.left)}</small></div>
+    <div class="stat"><span>Doanh thu tháng ${+ym.slice(5)}</span><b>${money(mon.revTotal)}</b><small>Tính đến ${dm(d)}</small></div>
   </div>
-  <p class="small muted">${preStart?'Thu ngày 01/01':'Thu hôm nay'}: <b class="num">${money(today.revTotal)}</b>. ${mon.pendingCount?`${mon.pendingCount} đơn chưa giao trong tháng, trị giá ${money(mon.pending)}, sẽ được cộng khi bấm Đã giao.`:''}</p>
+  <p class="small muted num">${splitLine(today.got)}</p>
   ${late.length?`<section><h2>Quá hẹn, chưa bấm Đã giao (${late.length})</h2><div class="list">${late.map(([i,o])=>ticket(i,o)).join('')}</div></section>`:''}
   <section><h2>Đơn giao ${preStart?'ngày 01/01':'hôm nay'} (${tod.length})</h2>
    ${tod.length?`<div class="list">${tod.map(([i,o])=>ticket(i,o)).join('')}</div>`:'<div class="empty">Chưa có đơn nào giao trong ngày này.</div>'}</section>
@@ -419,8 +469,8 @@ function vHome(){
 
 function orderListHtml(){
   const q=state.q.trim().toLowerCase();
-  const rows=Object.entries(data(state.ym).orders).filter(([,o])=>(state.st==='all'||o.status===state.st)&&(!q||((o.customer||'')+' '+(o.contact||'')+' '+(o.lines||[]).map(l=>l.name+' '+(l.note||'')).join(' ')).toLowerCase().includes(q))).sort(orderSort);
-  if(!rows.length)return`<div class="empty">${q||state.st!=='all'?'Không có đơn khớp bộ lọc này.':'Tháng này chưa có đơn nào.'+(readOnly?'':' <button class="btn primary" data-act="order">Thêm đơn đầu tiên</button>')}</div>`;
+  const rows=Object.entries(data(state.ym).orders).filter(([,o])=>(state.st==='all'||o.status===state.st)&&(state.og==='all'||(o.lines||[]).some(l=>(l.group||'banh')===state.og))&&(!q||((o.customer||'')+' '+(o.contact||'')+' '+(o.lines||[]).map(l=>l.name+' '+(l.note||'')).join(' ')).toLowerCase().includes(q))).sort(orderSort);
+  if(!rows.length)return`<div class="empty">${q||state.st!=='all'||state.og!=='all'?'Không có đơn khớp bộ lọc này.':'Tháng này chưa có đơn nào.'+' <button class="btn primary" data-act="order">Thêm đơn đầu tiên</button>'}</div>`;
   let out='',d='';
   for(const[id,o]of rows){
     if(o.date!==d){d=o.date;out+=`<div class="day-h num">${wd(d)}, ${dm(d)}</div>`}
@@ -429,11 +479,23 @@ function orderListHtml(){
   return`<div class="list">${out}</div>`;
 }
 function vOrders(){
-  const ch=[['all','Tất cả'],...Object.entries(STATUS)];
-  return`<div class="head"><h1>Đơn đặt</h1>${monthSw()}${readOnly?'':'<button class="btn primary" data-act="order">Thêm đơn</button>'}</div>
+  const ch=[['all','Tất cả'],...Object.entries(STATUS)],gr=[['all','Bánh, hoa, combo'],...Object.entries(GROUP)];
+  return`<div class="head"><h1>Đơn đặt</h1>${monthSw()}<a class="btn" href="#khach" style="text-decoration:none">Khách hàng</a><button class="btn primary" data-act="order">Thêm đơn</button></div>
   <label class="f"><span class="hint">Tìm theo tên khách, số điện thoại, món</span><input id="q" type="search" value="${esc(state.q)}" autocomplete="off"></label>
+  <div class="seg">${gr.map(([k,l])=>`<button data-act="og" data-k="${k}" aria-pressed="${state.og===k}">${l}</button>`).join('')}</div>
   <div class="chips">${ch.map(([k,l])=>`<button class="chip" data-act="st" data-k="${k}" aria-pressed="${state.st===k}">${l}</button>`).join('')}</div>
   <div id="olist">${isReady(state.ym)?orderListHtml():'<div class="empty">Đang tải đơn của tháng…</div>'}</div>`;
+}
+function customerRows(){
+  const q=normName(state.cq);
+  const rows=Object.entries(P.customers).filter(([,c])=>!q||normName(c.name+' '+(c.contact||'')+' '+(c.addresses||[]).join(' ')).includes(q)).sort((a,b)=>(b[1].lastDate||'').localeCompare(a[1].lastDate||''));
+  if(!rows.length)return`<div class="empty">${q?'Không tìm thấy khách này.':'Khách sẽ tự được lưu khi bạn tạo đơn có tên hoặc số điện thoại.'}</div>`;
+  return`<div class="rows">${rows.map(([id,c])=>`<button class="row" data-act="customer" data-id="${esc(id)}"><span class="grow">${esc(c.name)||'Chưa có tên'}<span class="sub">${[c.contact,...(c.addresses||[]).slice(0,3)].filter(Boolean).map(esc).join(' · ')||'Khách tự lấy'}</span></span></button>`).join('')}</div>`;
+}
+function vCustomers(){
+  return`<div class="head"><h1>Khách hàng</h1><a class="btn" href="#don" style="text-decoration:none">Về Đơn đặt</a></div>
+  <label class="f"><span class="hint">Tìm theo tên, số điện thoại, địa chỉ</span><input id="cq" type="search" value="${esc(state.cq)}" autocomplete="off"></label>
+  <div id="clist">${customerRows()}</div>`;
 }
 
 /* bán lẻ: nháp theo ngày, tự lưu sau khi ngừng bấm */
@@ -442,7 +504,7 @@ function retailView(date){const base=data(ymOf(date)).retail[date]||{},dr=drafts
 function touchRetail(date,patch){
   const dr=drafts[date]||(drafts[date]={});
   if(patch.items)dr.items={...(dr.items||{}),...patch.items};
-  for(const k of['otherBanh','otherHoa','note'])if(k in patch)dr[k]=patch[k];
+  for(const k of['otherBanh','otherHoa','otherCombo','ck','note'])if(k in patch)dr[k]=patch[k];
   clearTimeout(saveT);saveT=setTimeout(flushRetail,700);setSync('busy','Đang lưu…');
 }
 async function flushRetail(){
@@ -452,33 +514,39 @@ async function flushRetail(){
   for(const date of dates){
     const dr=drafts[date];delete drafts[date];
     const ym=ymOf(date),ref=db.collection('m/'+ym+'/retail').doc(date),had=!!data(ym).retail[date];
-    try{await write(()=>had?ref.update(stamp(dr)):ref.set(stamp({items:{},otherBanh:0,otherHoa:0,note:'',...dr})));
+    try{await write(()=>had?ref.update(stamp(dr)):ref.set(stamp({items:{},otherBanh:0,otherHoa:0,otherCombo:0,ck:0,note:'',...dr})));
       data(ym).retail[date]={...(data(ym).retail[date]||{}),...dr,items:{...(data(ym).retail[date]?.items||{}),...(dr.items||{})}};}
     catch(e){drafts[date]={...dr,...(drafts[date]||{})};toast(dbFail(e));setSync('off','Chưa lưu được');saving=false;schedule();return}
   }
-  saving=false;setSync('',readOnly?'Chỉ xem':'Đã đồng bộ');
+  saving=false;setSync('','Đã đồng bộ');
 }
 addEventListener('pagehide',()=>{if(Object.keys(drafts).length)flushRetail()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&Object.keys(drafts).length)flushRetail()});
 
+function retailMoney(doc,d){
+  const t=retailTotal(doc,P.products,d),ck=Math.min(doc.ck||0,t);
+  return{t,line:`Tiền mặt ${money(t-ck)} · Chuyển khoản ${money(ck)}`};
+}
 function vRetail(){
-  const d=state.day,ym=ymOf(d),doc=retailView(d),ps=productsSorted().filter(p=>p.active!==false||doc.items?.[p.id]);
-  const ready=isReady(ym)&&catalogReady;
-  const dis=readOnly||!ready?'disabled':'';
-  const cats=[];for(const p of ps){const c=p.cat||GROUP[p.group]||'Khác';let g=cats.find(x=>x.c===c);if(!g)cats.push(g={c,items:[]});g.items.push(p)}
-  const total=retailTotal(doc,P.products,d);
+  const d=state.day,ym=ymOf(d),doc=retailView(d),g=state.rg;
+  const ps=productsSorted().filter(p=>(p.group||'banh')===g&&(p.active!==false||doc.items?.[p.id]));
+  const ready=isReady(ym)&&catalogReady,dis=!ready?'disabled':'';
+  const cats=[];for(const p of ps){const c=p.cat||GROUP[p.group]||'Khác';let x=cats.find(y=>y.c===c);if(!x)cats.push(x={c,items:[]});x.items.push(p)}
+  const m=retailMoney(doc,d),key={banh:'otherBanh',hoa:'otherHoa',combo:'otherCombo'}[g];
   const days=Object.entries(data(ym).retail).map(([k,v])=>[k,retailTotal(k===d?doc:v,P.products,k)]).filter(x=>x[1]).sort((a,b)=>b[0].localeCompare(a[0]));
   return`<div class="head"><h1>Bán lẻ trong ngày</h1>
     <div class="switch"><button data-act="day" data-k="-1" aria-label="Ngày trước" ${d<=START?'disabled':''}>‹</button><b class="num">${wd(d)}, ${dm(d)}</b><button data-act="day" data-k="1" aria-label="Ngày sau">›</button></div></div>
   <label class="f"><span class="hint">Chọn ngày khác</span><input id="dayPick" type="date" min="${START}" value="${d}"></label>
+  <div class="seg">${Object.entries(GROUP).map(([k,l])=>`<button data-act="rg" data-k="${k}" aria-pressed="${g===k}">${l}</button>`).join('')}</div>
   ${!ready?'<div class="empty">Đang tải dữ liệu của ngày này…</div>':''}
-  ${ready&&!ps.length?'<div class="empty">Chưa có sản phẩm nào. <a class="linkish" href="#banggia">Thêm trong Bảng giá</a></div>':''}
-  ${cats.map(g=>`<section><h2>${esc(g.c)}</h2><div class="rows">${g.items.map(p=>{const q=doc.items?.[p.id]||0,pr=priceAt(p,d);return`<div class="row"><div class="grow">${esc(p.name)}<span class="sub num">${money(pr)}${q?' · '+money(q*pr):''}</span></div>
+  ${ready&&!ps.length?`<div class="empty">Chưa có sản phẩm nhóm ${GROUP[g]}. <a class="linkish" href="#banggia">Thêm trong Bảng giá</a></div>`:''}
+  ${cats.map(c=>`<section><h2>${esc(c.c)}</h2><div class="rows">${c.items.map(p=>{const q=doc.items?.[p.id]||0,pr=priceAt(p,d);return`<div class="row"><div class="grow">${esc(p.name)}<span class="sub num">${money(pr)}${q?' · '+money(q*pr):''}</span></div>
     <div class="stepper"><button data-act="qty" data-id="${p.id}" data-k="-1" id="m-${p.id}" aria-label="Bớt ${esc(p.name)}" ${dis}>−</button><input id="q-${p.id}" data-qty="${p.id}" type="number" inputmode="numeric" min="0" value="${q||''}" placeholder="0" aria-label="Số lượng ${esc(p.name)}" ${dis}><button data-act="qty" data-id="${p.id}" data-k="1" id="p-${p.id}" aria-label="Thêm ${esc(p.name)}" ${dis}>+</button></div></div>`}).join('')}</div></section>`).join('')}
-  <section><h2>Bán khác, tự nhập tiền</h2><div class="grid2">
-    <label class="f">Bánh<input id="otherBanh" data-money data-other="otherBanh" inputmode="numeric" value="${fmtInput(doc.otherBanh)}" ${dis}></label>
-    <label class="f">Hoa<input id="otherHoa" data-money data-other="otherHoa" inputmode="numeric" value="${fmtInput(doc.otherHoa)}" ${dis}></label></div></section>
-  <div class="sticky-total"><span>Tổng bán lẻ ${dm(d)}</span><b>${money(total)}</b></div>
+  <section><h2>Bán khác, tự nhập tiền</h2>
+    <label class="f">${GROUP[g]}${mi('other-'+g,`data-other="${key}" ${dis}`,doc[key])}</label></section>
+  <section><h2>Thu tiền</h2>
+    <label class="f">Trong tổng ngày, số tiền chuyển khoản${mi('rt-ck',`data-other="ck" ${dis}`,doc.ck)}<span class="hint">Phần còn lại tính là tiền mặt.</span></label></section>
+  <div class="sticky-total"><span>Tổng bán lẻ ${dm(d)}<small id="rt-line" style="display:block;font-weight:500;font-size:12.5px;opacity:.85">${m.line}</small></span><b id="rt-total">${money(m.t)}</b></div>
   ${days.length?`<section><h2>Các ngày đã nhập trong tháng</h2><div class="rows">${days.map(([k,v])=>`<button class="row" data-act="goday" data-k="${k}"><span class="grow num">${wd(k)}, ${dm(k)}</span><span class="amt">${money(v)}</span></button>`).join('')}</div></section>`:''}`;
 }
 
@@ -489,18 +557,18 @@ function vPurchases(){
   for(const[id,e]of rows){
     if(e.date!==d){if(d)list+='</div>';d=e.date;list+=`<div class="day-h num">${wd(d)}, ${dm(d)}</div><div class="rows">`}
     const src=P.sources[e.sourceId];
-    list+=`<button class="row" data-act="purchase" data-id="${id}" data-ym="${state.ym}"><span class="grow">${esc(src?.name||'Nguồn đã xóa')}<span class="sub">${COST[src?.group]||'Chi chung'}${e.note?' · '+esc(e.note):''}</span></span><span class="amt">${money(e.amount)}</span></button>`;
+    list+=`<div class="row"><button class="rowmain" data-act="purchase" data-id="${id}" data-ym="${state.ym}"><span class="grow">${esc(src?.name||'Nguồn đã xóa')}<span class="sub">${COST[src?.group]||'Chi chung'}${e.note?' · '+esc(e.note):''}</span></span><span class="amt">${money(e.amount)}</span></button><button class="btn sm danger" data-act="armdel" data-kind="purchases" data-id="${id}" data-ym="${state.ym}">Xóa</button></div>`;
   }
   if(d)list+='</div>';
   const top=Object.entries(s.bySource).sort((a,b)=>b[1]-a[1]);
-  return`<div class="head"><h1>Nhập hàng</h1>${monthSw()}${readOnly?'':'<button class="btn primary" data-act="purchase">Thêm khoản nhập</button>'}</div>
-  <div class="stats"><div class="stat hero"><span>Tổng tháng</span><b>${money(s.costTotal)}</b></div>
-   <div class="stat"><span>Nguyên liệu bánh</span><b>${money(s.cost.banh)}</b></div>
-   <div class="stat"><span>Nhập hoa</span><b>${money(s.cost.hoa)}</b></div></div>
-  ${s.cost.chung?`<p class="small muted">Chi chung cho cả tiệm: <b class="num">${money(s.cost.chung)}</b></p>`:''}
+  return`<div class="head"><h1>Nhập hàng</h1>${monthSw()}<button class="btn primary" data-act="purchase">Thêm khoản nhập</button></div>
+  <div class="stats"><div class="stat"><span>Bánh</span><b>${money(s.cost.banh)}</b></div>
+   <div class="stat"><span>Hoa</span><b>${money(s.cost.hoa)}</b></div>
+   <div class="stat wide"><span>Combo</span><b>${money(s.cost.combo)}</b></div></div>
+  <p class="small muted">Chi chung: <b class="num">${money(s.cost.chung)}</b> · Tổng tháng: <b class="num">${money(s.costTotal)}</b></p>
   ${rows.length?`<div class="two"><section style="gap:6px"><h2>Từng lần nhập</h2>${list}</section>
    <section><h2>Theo nguồn</h2><div class="rows">${top.map(([n,v])=>`<div class="row"><span class="grow">${esc(n)}</span><span class="amt">${money(v)}</span></div>`).join('')}</div></section></div>`
-   :`<div class="empty">${isReady(state.ym)?'Tháng này chưa có khoản nhập nào.':'Đang tải…'}${readOnly||!isReady(state.ym)?'':' <button class="btn primary" data-act="purchase">Ghi khoản đầu tiên</button>'}</div>`}`;
+   :`<div class="empty">${isReady(state.ym)?'Tháng này chưa có khoản nhập nào.':'Đang tải…'}${!isReady(state.ym)?'':' <button class="btn primary" data-act="purchase">Ghi khoản đầu tiên</button>'}</div>`}`;
 }
 
 /* báo cáo: giữ số đã tải 10 phút để không tốn lượt đọc miễn phí */
@@ -519,31 +587,36 @@ async function loadYear(){
   }catch(e){toast('Chưa tải được báo cáo. Hãy mở lại mục này.')}
 }
 function vReport(){
-  const y=state.repYear,sel=state.repMonth;
+  const y=state.repYear,sel=state.repMonth,today=workDay();
   const head=`<div class="head"><h1>Báo cáo</h1><div class="switch"><button data-act="ry" data-k="-1" aria-label="Năm trước" ${y<=2027?'disabled':''}>‹</button><b class="num">Năm ${y}</b><button data-act="ry" data-k="1" aria-label="Năm sau">›</button></div>
-   ${dl?`<button class="btn" data-act="export" ${state.yearReady?'':'disabled'}>Tải file Excel (CSV)</button>`:''}</div>`;
+   <button class="btn" data-act="export" ${state.yearReady?'':'disabled'}>Tải file Excel (CSV)</button></div>`;
   if(!state.yearReady)return head+'<div class="empty">Đang cộng số liệu cả năm…</div>';
-  const cat=[P.products,P.sources];
-  const months=Array.from({length:12},(_,i)=>{const ym=y+'-'+pad(i+1);return{i:i+1,ym,s:summarize([data(ym)],...cat)}});
-  const s=sel==='all'?summarize(months.map(m=>data(m.ym)),...cat):months[sel-1].s;
+  const cat=[P.products,P.sources],all=Array.from({length:12},(_,i)=>data(y+'-'+pad(i+1)));
+  const upto=e=>e<today?e:today;
+  const months=all.map((_,i)=>{const ym=y+'-'+pad(i+1),end=ym+'-31';return{i:i+1,ym,s:summarize(all,...cat,ym+'-01',upto(end))}});
+  const from=sel==='all'?y+'-01-01':y+'-'+pad(sel)+'-01',end=sel==='all'?y+'-12-31':y+'-'+pad(sel)+'-31';
+  const s=summarize(all,...cat,from,upto(end));
+  const nextDay=shiftDay(today,1),later=summarize(all,...cat,from>nextDay?from:nextDay,end);
   const label=sel==='all'?'cả năm '+y:'tháng '+sel+'/'+y;
   const items=Object.entries(s.byItem).sort((a,b)=>b[1].amt-a[1].amt).slice(0,10);
   const src=Object.entries(s.bySource).sort((a,b)=>b[1]-a[1]).slice(0,10);
   const cus=Object.entries(s.customers).filter(([,c])=>c.n>=2).sort((a,b)=>b[1].amt-a[1].amt).slice(0,10);
   const neg=v=>`<td class="${v<0?'neg':''}">${money(v)}</td>`;
+  const card=(g,l)=>{const p=s.rev[g]-s.cost[g];return`<div class="gcard"><h3>${l}</h3><div><span>Doanh thu</span><span>${money(s.rev[g])}</span></div><div><span>Tiền nhập</span><span>${money(s.cost[g])}</span></div><div class="g"><span>Lãi</span><span class="${p<0?'neg':''}">${money(p)}</span></div></div>`};
   return head+`
   <div class="chips"><button class="chip" data-act="rm" data-k="all" aria-pressed="${sel==='all'}">Cả năm</button>${months.map(m=>`<button class="chip" data-act="rm" data-k="${m.i}" aria-pressed="${sel===m.i}">T${m.i}</button>`).join('')}</div>
   <div class="stats"><div class="stat hero"><span>Lợi nhuận ${label}</span><b>${money(s.profit)}</b></div>
-   <div class="stat"><span>Doanh thu</span><b>${money(s.revTotal)}</b></div>
-   <div class="stat"><span>Tiền nhập</span><b>${money(s.costTotal)}</b></div></div>
-  ${s.pendingCount?`<p class="small muted">Chưa tính ${s.pendingCount} đơn chưa giao, trị giá <b class="num">${money(s.pending)}</b>.</p>`:''}
+   <div class="stat"><span>Doanh thu</span><b>${money(s.revTotal)}</b><small>Đơn đặt ${money(s.orders)} · Bán lẻ ${money(s.retail)}</small></div>
+   <div class="stat"><span>Tiền nhập</span><b>${money(s.costTotal)}</b><small>Chi chung ${money(s.cost.chung)}</small></div></div>
+  ${later.orderCount?`<p class="small muted">Chưa tính ${later.orderCount} đơn giao sau ngày ${dm(today)}, trị giá <b class="num">${money(later.orders)}</b>.</p>`:''}
+  <section><h2>Bánh, hoa và combo, ${label}</h2><div class="gcards">${card('banh','Bánh')}${card('hoa','Hoa')}${card('combo','Combo')}</div>
+   <p class="small muted">Lợi nhuận tổng lấy lãi 3 mảng trừ chi chung ${money(s.cost.chung)}.</p></section>
+  <section><h2>Tiền đã nhận, ${label}</h2><div class="stats">
+    <div class="stat"><span>Tiền mặt</span><b>${money(s.flow.tm)}</b></div>
+    <div class="stat"><span>Chuyển khoản</span><b>${money(s.flow.ck)}</b></div>
+    <div class="stat wide"><span>Còn phải thu</span><b>${money(s.left)}</b></div></div>
+    <p class="small muted">Tính theo ngày nhận tiền.${s.flow.na?` Có ${money(s.flow.na)} chưa ghi hình thức, hãy mở đơn để chọn Tiền mặt hoặc Chuyển khoản.`:''}</p></section>
   <section><h2>Doanh thu và tiền nhập từng tháng</h2>${chart(months)}</section>
-  <section><h2>Bánh và hoa, ${label}</h2><div class="tscroll"><table><thead><tr><th>Mảng</th><th>Doanh thu</th><th>Tiền nhập</th><th>Lãi</th></tr></thead><tbody>
-   <tr><td>Bánh</td><td>${money(s.rev.banh)}</td><td>${money(s.cost.banh)}</td>${neg(s.rev.banh-s.cost.banh)}</tr>
-   <tr><td>Hoa</td><td>${money(s.rev.hoa)}</td><td>${money(s.cost.hoa)}</td>${neg(s.rev.hoa-s.cost.hoa)}</tr>
-   <tr><td>Chi chung</td><td>–</td><td>${money(s.cost.chung)}</td>${neg(-s.cost.chung)}</tr>
-   <tr class="total"><td>Tổng</td><td>${money(s.revTotal)}</td><td>${money(s.costTotal)}</td>${neg(s.profit)}</tr></tbody></table></div>
-   <p class="small muted">Tiền combo được chia cho Bánh và Hoa theo phần trăm hoa đặt trong Bảng giá. Bán lẻ ${money(s.retail)}, đơn đặt ${money(s.orders)}.</p></section>
   <div class="two">
    <section><h2>Bán chạy theo doanh thu</h2>${items.length?`<div class="rows">${items.map(([n,v])=>`<div class="row"><span class="grow">${esc(n)}${v.qty?`<span class="sub num">${v.qty} cái</span>`:''}</span><span class="amt">${money(v.amt)}</span></div>`).join('')}</div>`:'<div class="empty">Chưa có doanh thu.</div>'}</section>
    <section><h2>Chi nhiều nhất</h2>${src.length?`<div class="rows">${src.map(([n,v])=>`<div class="row"><span class="grow">${esc(n)}</span><span class="amt">${money(v)}</span></div>`).join('')}</div>`:'<div class="empty">Chưa có khoản nhập.</div>'}</section>
@@ -579,21 +652,21 @@ function bindChart(){
 }
 
 function vPrices(){
-  const ps=productsSorted(),ss=sourcesSorted(),d=workDay(),tab=state.priceTab;
-  const seg=`<div class="seg" style="max-width:360px"><button data-act="ptab" data-k="sp" aria-pressed="${tab==='sp'}">Sản phẩm</button><button data-act="ptab" data-k="ng" aria-pressed="${tab==='ng'}">Nguồn nhập</button></div>`;
+  const d=workDay(),tab=state.priceTab;
+  const seg=`<div class="seg">${[...Object.entries(GROUP),['ng','Nguồn nhập']].map(([k,l])=>`<button data-act="ptab" data-k="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>`;
   if(tab==='ng'){
-    const groups=Object.keys(COST).map(g=>[g,ss.filter(s=>s.group===g)]).filter(x=>x[1].length);
-    return`<div class="head"><h1>Nguồn nhập</h1>${readOnly?'':'<button class="btn primary" data-act="source">Thêm nguồn</button>'}</div>${seg}
+    const ss=sourcesSorted(),groups=Object.keys(COST).map(g=>[g,ss.filter(s=>s.group===g)]).filter(x=>x[1].length);
+    return`<div class="head"><h1>Nguồn nhập</h1><button class="btn primary" data-act="source">Thêm nguồn</button></div>${seg}
     <p class="muted">Số tiền ghi ở mục Nhập hàng theo từng ngày, nên mỗi lần nhập có thể khác nhau. Tháng nào nhập bao nhiêu sẽ tính đúng vào tháng đó.</p>
     ${groups.length?groups.map(([g,l])=>`<section><h2>${COST[g]}</h2><div class="rows">${l.map(s=>`<button class="row ${s.active===false?'off':''}" data-act="source" data-id="${s.id}"><span class="grow">${esc(s.name)}${s.active===false?'<span class="sub">Đã ngừng dùng</span>':''}</span></button>`).join('')}</div></section>`).join(''):'<div class="empty">Chưa có nguồn nhập nào.</div>'}`;
   }
+  const ps=productsSorted().filter(p=>(p.group||'banh')===tab);
   const cats=[];for(const p of ps){const c=p.cat||GROUP[p.group];let g=cats.find(x=>x.c===c);if(!g)cats.push(g={c,items:[]});g.items.push(p)}
-  return`<div class="head"><h1>Bảng giá</h1>${readOnly?'':'<button class="btn primary" data-act="product">Thêm sản phẩm</button>'}</div>${seg}
+  return`<div class="head"><h1>Bảng giá</h1><button class="btn primary" data-act="product">Thêm sản phẩm</button></div>${seg}
   <p class="muted">Bấm vào sản phẩm để đổi giá. Giá mới có hiệu lực từ ngày bạn chọn, các ngày trước vẫn giữ giá cũ.</p>
-  ${ps.some(p=>p.group==='hoa')?'':`<div class="notice">Chưa có hoa và combo trong bảng giá. Bấm Thêm sản phẩm rồi chọn nhóm Hoa hoặc Combo.</div>`}
   ${cats.length?cats.map(g=>`<section><h2>${esc(g.c)}</h2><div class="rows">${g.items.map(p=>{
     const now=priceAt(p,d),list=[...(p.prices||[])].sort((a,b)=>a.from<b.from?-1:1),up=list.find(e=>e.from>d),cur=[...list].reverse().find(e=>e.from<=d)||list[0];
-    return`<button class="row ${p.active===false?'off':''}" data-act="product" data-id="${p.id}"><span class="grow">${esc(p.name)}<span class="sub num">${p.active===false?'Ngừng bán':cur?'Từ '+dmy(cur.from):''}${up?` · ${money(up.price)} từ ${dm(up.from)}`:''}</span></span><span class="amt">${money(now)}</span></button>`}).join('')}</div></section>`).join(''):'<div class="empty">Đang tải bảng giá…</div>'}`;
+    return`<button class="row ${p.active===false?'off':''}" data-act="product" data-id="${p.id}"><span class="grow">${esc(p.name)}<span class="sub num">${p.active===false?'Ngừng bán':cur?'Từ '+dmy(cur.from):''}${up?` · ${money(up.price)} từ ${dm(up.from)}`:''}</span></span><span class="amt">${money(now)}</span></button>`}).join('')}</div></section>`).join(''):`<div class="empty">${catalogReady?`Chưa có sản phẩm nhóm ${GROUP[tab]}. <button class="btn primary" data-act="product">Thêm sản phẩm</button>`:'Đang tải bảng giá…'}</div>`}`;
 }
 
 /* sheet */
@@ -615,7 +688,7 @@ async function saving2(btn,fn){
 }
 
 /* đơn đặt */
-let od=null;
+let od=null,payT=null;
 function productOptions(sel){
   const groups={};for(const p of productsSorted()){if(p.active===false&&p.id!==sel)continue;const c=p.cat||GROUP[p.group];(groups[c]||(groups[c]=[])).push(p)}
   return`<option value="">Tự ghi món khác</option>`+Object.entries(groups).map(([c,l])=>`<optgroup label="${esc(c)}">${l.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.name)}</option>`).join('')}</optgroup>`).join('');
@@ -625,37 +698,66 @@ function linesHtml(){
     <label class="f">Món<select id="l${i}p" data-l="${i}" data-lf="pid">${productOptions(l.pid)}</select></label>
     ${l.pid?'':`<div class="grid2"><label class="f">Tên món<input id="l${i}n" data-l="${i}" data-lf="name" value="${esc(l.name)}"></label>
       <label class="f">Tính vào<select id="l${i}g" data-l="${i}" data-lf="group">${Object.entries(GROUP).map(([k,v])=>`<option value="${k}" ${l.group===k?'selected':''}>${v}</option>`).join('')}</select></label></div>`}
-    <label class="f">Yêu cầu riêng<input id="l${i}d" data-l="${i}" data-lf="note" value="${esc(l.note)}" placeholder="Vị, màu, chữ trên bánh"></label>
+    <label class="f">Chữ trên bánh, yêu cầu riêng<input id="l${i}d" data-l="${i}" data-lf="note" value="${esc(l.note)}" placeholder="Ví dụ: Mừng sinh nhật Mẹ"></label>
     <div class="li3"><label class="f">Số lượng<input id="l${i}q" data-l="${i}" data-lf="qty" type="number" min="1" inputmode="numeric" value="${l.qty}"></label>
-      <label class="f">Đơn giá<input id="l${i}r" data-l="${i}" data-lf="price" data-money inputmode="numeric" value="${fmtInput(l.price)}"></label>
+      <label class="f">Đơn giá${mi(`l${i}r`,`data-l="${i}" data-lf="price"`,l.price)}</label>
       ${od.lines.length>1?`<button class="btn" data-act="rmline" data-i="${i}" aria-label="Bỏ món này">Bỏ</button>`:''}</div>
   </div>`).join('');
 }
+function paysHtml(){
+  return od.payments.map((p,i)=>`<div class="lineitem"><div class="grid2">
+    <label class="f">Số tiền${mi(`pa${i}`,`data-pay="${i}" data-pf="amount"`,p.amount)}</label>
+    <label class="f">Hình thức<select id="pm${i}" data-pay="${i}" data-pf="method">${p.method?'':'<option value="" selected>Chưa ghi</option>'}<option value="tm" ${p.method==='tm'?'selected':''}>Tiền mặt</option><option value="ck" ${p.method==='ck'?'selected':''}>Chuyển khoản</option></select></label></div>
+    <div class="li3" style="grid-template-columns:1fr auto"><label class="f">Ngày nhận<input id="pd${i}" data-pay="${i}" data-pf="date" type="date" value="${p.date}"></label><button class="btn" data-act="rmpay" data-i="${i}">Bỏ</button></div></div>`).join('');
+}
+function custSug(){
+  const box=$('cust-sug');if(!box)return;
+  const q=normName(od.customer),qd=(od.contact||'').replace(/\D/g,'');
+  if(od.customerId||(!q&&qd.length<3)){box.innerHTML='';return}
+  const hits=Object.entries(P.customers).filter(([,c])=>(q&&normName(c.name).includes(q))||(qd.length>=3&&(c.contact||'').replace(/\D/g,'').includes(qd))).slice(0,5);
+  box.innerHTML=hits.map(([id,c])=>`<button class="chip" data-act="pickcust" data-id="${esc(id)}">${esc(c.name)}${c.contact?' · '+esc(c.contact):''}</button>`).join('');
+}
+function addrChips(){
+  const box=$('addr-sug');if(!box)return;
+  const c=P.customers[od.customerId||customerKey(od.customer,od.contact)];
+  const list=c?.addresses||[];
+  box.innerHTML=list.length?list.map((a,i)=>`<button class="chip" data-act="useaddr" data-i="${i}">${esc(a)}</button>`).join('')+'<button class="chip" data-act="useaddr" data-i="-1">Khách tự lấy</button>':'';
+}
+function setShip(v){
+  od.ship=v;document.querySelectorAll('#shipseg button').forEach(x=>x.setAttribute('aria-pressed',(x.dataset.k==='1')===v));
+  $('addr').hidden=!v;
+}
 function odSum(){
   const f=$('o-sum');if(!f)return;
-  f.innerHTML=`Tổng ${money(orderTotal(od))}<b>Còn thu ${money(orderLeft(od))}</b>`;
+  f.innerHTML=`Tổng ${money(orderTotal(od))} · Đã nhận ${money(orderPaid(od))}<b>Còn thu ${money(orderLeft(od))}</b>`;
 }
 function openOrder(id,ym){
   const ex=id?data(ym).orders[id]:null;
-  od=ex?{...ex,id,oldYm:ym,lines:ex.lines.map(l=>({...l}))}:{id:null,customer:'',contact:'',date:state.view==='don'&&state.ym>ymOf(workDay())?state.ym+'-01':workDay(),time:'',ship:false,address:'',deposit:0,paidFull:false,status:'moi',note:'',lines:[{pid:'',name:'',note:'',qty:1,price:0,group:'banh'}]};
-  const names=[...new Set(Object.values(M).flatMap(m=>Object.values(m.orders).map(o=>o.customer)).filter(Boolean))];
-  const ro=readOnly?'disabled':'';
+  if(ex){od={...ex,id,oldYm:ym,lines:ex.lines.map(l=>({...l})),payments:paysOf(ex).map(p=>({...p}))};delete od.deposit;delete od.paidFull}
+  else od={id:null,customerId:null,customer:'',contact:'',date:state.view==='don'&&state.ym>ymOf(workDay())?state.ym+'-01':workDay(),time:'',ship:false,address:'',status:'moi',note:'',lines:[{pid:'',name:'',note:'',qty:1,price:0,group:'banh'}],payments:[]};
   openSheet(id?'Sửa đơn':'Thêm đơn',`
-   <div class="grid2"><label class="f">Tên khách<input id="o-customer" data-o="customer" list="custs" autocomplete="off" value="${esc(od.customer)}"></label>
-    <label class="f">SĐT, Zalo, Facebook<input id="o-contact" data-o="contact" value="${esc(od.contact)}"></label></div>
-   <datalist id="custs">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+   <div class="grid2"><label class="f">Tên khách<input id="o-customer" data-o="customer" autocomplete="off" value="${esc(od.customer)}"></label>
+    <label class="f">SĐT, Zalo, Facebook<input id="o-contact" data-o="contact" autocomplete="off" value="${esc(od.contact)}"></label></div>
+   <div class="sug" id="cust-sug"></div>
    <div class="grid2"><label class="f">Ngày giao<input id="o-date" data-o="date" type="date" min="${START}" value="${od.date}"></label>
     <label class="f">Giờ<input id="o-time" data-o="time" type="time" value="${esc(od.time)}"></label></div>
-   <div class="seg"><button data-act="ship" data-k="0" aria-pressed="${!od.ship}">Khách đến lấy</button><button data-act="ship" data-k="1" aria-pressed="${!!od.ship}">Giao tận nơi</button></div>
+   <div class="sug" id="addr-sug"></div>
+   <div class="seg" id="shipseg"><button data-act="ship" data-k="0" aria-pressed="${!od.ship}">Khách đến lấy</button><button data-act="ship" data-k="1" aria-pressed="${!!od.ship}">Giao tận nơi</button></div>
    <label class="f" id="addr" ${od.ship?'':'hidden'}>Địa chỉ giao<input id="o-address" data-o="address" value="${esc(od.address)}"></label>
    <div id="lines" style="display:flex;flex-direction:column;gap:8px">${linesHtml()}</div>
    <button class="btn" data-act="addline">Thêm món</button>
-   <div class="grid2"><label class="f">Tiền cọc<input id="o-deposit" data-o="deposit" data-money inputmode="numeric" value="${fmtInput(od.deposit)}"></label>
-    <label class="f">Trạng thái<select id="o-status" data-o="status">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${od.status===k?'selected':''}>${v}</option>`).join('')}</select></label></div>
-   <label class="check"><input id="o-paid" data-o="paidFull" type="checkbox" ${od.paidFull?'checked':''}>Đã thu đủ tiền</label>
-   <label class="f">Ghi chú<textarea id="o-note" data-o="note">${esc(od.note)}</textarea></label>`,
-   `<div class="sum" id="o-sum"></div>${id&&!readOnly?delBtn('delorder'):''}${readOnly?'':'<button class="btn primary" data-act="saveorder">Lưu đơn</button>'}`,
-   ()=>{odSum();if(ro)$('sheet').querySelectorAll('.sh-body input,.sh-body select,.sh-body textarea,.sh-body button').forEach(x=>x.disabled=true)});
+   <section><h2>Tiền đã nhận</h2><div id="pays" style="display:flex;flex-direction:column;gap:8px">${paysHtml()}</div>
+    <button class="btn" data-act="addpay">Thêm lần thu tiền (cọc hoặc trả đủ)</button></section>
+   <label class="f">Trạng thái<select id="o-status" data-o="status">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${od.status===k?'selected':''}>${v}</option>`).join('')}</select></label>
+   <label class="f">Ghi chú nổi bật<textarea id="o-note" data-o="note">${esc(od.note)}</textarea></label>`,
+   `<div class="sum" id="o-sum"></div>${id?delBtn('delorder'):''}<button class="btn primary" data-act="saveorder">Lưu đơn</button>`,
+   ()=>{odSum();custSug();addrChips()});
+}
+function openPay(id,ym){
+  const o=data(ym).orders[id];if(!o)return;
+  payT={id,ym};
+  openSheet('Thu đủ tiền đơn',`<p>${esc(o.customer)||'Khách lẻ'}: còn thu <b class="num">${money(orderLeft(o))}</b>. Khách trả bằng gì?</p>
+   <button class="btn primary paybtn" data-act="payby" data-k="tm">Tiền mặt</button><button class="btn paybtn" data-act="payby" data-k="ck">Chuyển khoản</button>`,'<span class="sum"></span>');
 }
 async function saveOrder(btn){
   const lines=od.lines.filter(l=>l.pid||l.name||l.price);
@@ -663,11 +765,30 @@ async function saveOrder(btn){
   if(!lines.length)return sheetErr('Hãy chọn ít nhất một món.');
   if(lines.some(l=>!(l.qty>0)))return sheetErr('Số lượng phải từ 1 trở lên.');
   const{id,oldYm,...rest}=od,ym=ymOf(od.date),col=db.collection('m/'+ym+'/orders'),ref=id?col.doc(id):col.doc();
-  const body=stamp({...rest,lines:lines.map(l=>({...l,name:l.name||'Món khác'}))});
-  const ok=await saving2(btn,async()=>{await ref.set(body);if(oldYm&&oldYm!==ym)await db.collection('m/'+oldYm+'/orders').doc(id).delete()});
+  const body=stamp({...rest,payments:od.payments.filter(p=>p.amount>0),lines:lines.map(l=>({...l,name:l.name||'Món khác'}))});
+  const ckey=od.customerId||customerKey(od.customer,od.contact);
+  if(ckey)body.customerId=ckey;
+  const ok=await saving2(btn,async()=>{
+    await ref.set(body);
+    if(oldYm&&oldYm!==ym)await db.collection('m/'+oldYm+'/orders').doc(id).delete();
+    if(ckey)await db.collection('customers').doc(ckey).set(stamp(mergeCustomer(P.customers[ckey],body)));
+  });
   if(!ok)return;
   if(ym!==state.ym&&state.view==='don'){state.ym=ym;focusMonths()}else watch(ym);
   closeSheet();toast('Đã lưu đơn giao '+dm(od.date));
+}
+let cd=null;
+function custAddrHtml(){
+  return cd.addresses.map((a,i)=>`<div class="row"><span class="grow">${esc(a)}</span><button class="btn sm" data-act="rmaddr" data-i="${i}">Bỏ</button></div>`).join('')||'<div class="row muted">Chưa có địa chỉ giao</div>';
+}
+function openCustomer(id){
+  const c=P.customers[id];if(!c)return;
+  cd={...c,id,addresses:[...(c.addresses||[])]};
+  openSheet('Thông tin khách',`
+   <label class="f">Tên khách<input id="c-name" data-c="name" value="${esc(cd.name)}"></label>
+   <label class="f">SĐT, Zalo, Facebook<input id="c-contact" data-c="contact" value="${esc(cd.contact)}"></label>
+   <section><h2>Địa chỉ đã lưu</h2><div class="rows" id="c-addr">${custAddrHtml()}</div></section>`,
+   `<span class="sum"></span>${delBtn('delcustomer')}<button class="btn primary" data-act="savecustomer">Lưu</button>`);
 }
 
 /* nhập hàng */
@@ -679,12 +800,12 @@ function openPurchase(id,ym){
   const opts=Object.keys(COST).map(g=>{const l=active.filter(s=>s.group===g);return l.length?`<optgroup label="${COST[g]}">${l.map(s=>`<option value="${s.id}" ${s.id===pd.sourceId?'selected':''}>${esc(s.name)}</option>`).join('')}</optgroup>`:''}).join('');
   openSheet(id?'Sửa khoản nhập':'Thêm khoản nhập',`
    <div class="grid2"><label class="f">Ngày nhập<input id="b-date" data-p="date" type="date" min="${START}" value="${pd.date}"></label>
-    <label class="f">Số tiền<input id="b-amount" data-p="amount" data-money inputmode="numeric" value="${fmtInput(pd.amount)}"></label></div>
+    <label class="f">Số tiền${mi('b-amount','data-p="amount"',pd.amount)}</label></div>
    <label class="f">Nguồn nhập<select id="b-src" data-p="sourceId"><option value="">Chọn nguồn</option>${opts}<option value="__new">+ Thêm nguồn mới</option></select></label>
    <div id="newsrc" class="grid2" hidden><label class="f">Tên nguồn mới<input id="b-sn" data-p="srcName" placeholder="Ví dụ: Mứt dâu"></label>
     <label class="f">Thuộc nhóm<select id="b-sg" data-p="srcGroup">${Object.entries(COST).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label></div>
    <label class="f">Ghi chú<input id="b-note" data-p="note" value="${esc(pd.note)}" placeholder="Số lượng, món đã mua"></label>`,
-   `<span class="sum"></span>${id&&!readOnly?delBtn('delpurchase'):''}${readOnly?'':'<button class="btn primary" data-act="savepurchase">Lưu</button>'}`);
+   `<span class="sum"></span>${id?delBtn('delpurchase'):''}<button class="btn primary" data-act="savepurchase">Lưu</button>`);
 }
 async function savePurchase(btn){
   if(!pd.date)return sheetErr('Hãy chọn ngày nhập.');
@@ -707,13 +828,13 @@ async function savePurchase(btn){
 let sd=null;
 function pricesHtml(){
   const list=[...sd.prices].sort((a,b)=>a.from<b.from?1:-1);
-  return list.map(e=>`<div class="row"><span class="grow num">Từ ${dmy(e.from)}</span><span class="amt">${money(e.price)}</span>${list.length>1&&!readOnly?`<button class="btn sm" data-act="rmprice" data-k="${e.from}" aria-label="Bỏ mốc giá ${dmy(e.from)}">Bỏ</button>`:''}</div>`).join('')||'<div class="row muted">Chưa có giá</div>';
+  return list.map(e=>`<div class="row"><span class="grow num">Từ ${dmy(e.from)}</span><span class="amt">${money(e.price)}</span>${list.length>1?`<button class="btn sm" data-act="rmprice" data-k="${e.from}" aria-label="Bỏ mốc giá ${dmy(e.from)}">Bỏ</button>`:''}</div>`).join('')||'<div class="row muted">Chưa có giá</div>';
 }
 function openProduct(id){
   const ex=id?P.products[id]:null;
-  sd=ex?{...ex,id,prices:(ex.prices||[]).map(x=>({...x}))}:{id:null,name:'',cat:'',group:'banh',hoaPct:50,active:true,prices:[],o:900};
+  sd=ex?{...ex,id,prices:(ex.prices||[]).map(x=>({...x}))}:{id:null,name:'',cat:'',group:state.priceTab==='ng'?'banh':state.priceTab,active:true,prices:[],o:900};
   const cats=[...new Set(productsSorted().map(p=>p.cat).filter(Boolean))];
-  const newP=`<div class="grid2"><label class="f">${id?'Giá mới':'Giá bán'}<input id="n-price" data-money inputmode="numeric"></label>
+  const newP=`<div class="grid2"><label class="f">${id?'Giá mới':'Giá bán'}${mi('n-price','',0)}</label>
     <label class="f">Áp dụng từ ngày<input id="n-from" type="date" min="${START}" value="${workDay()}"></label></div>
     ${id?'<button class="btn" data-act="addprice">Thêm mốc giá này</button>':''}`;
   openSheet(id?'Sửa sản phẩm':'Thêm sản phẩm',`
@@ -721,11 +842,10 @@ function openProduct(id){
    <div class="grid2"><label class="f">Nhóm hiển thị<input id="s-cat" data-s="cat" list="catlist" value="${esc(sd.cat)}" placeholder="Ví dụ: Hoa bó"></label>
     <label class="f">Tính doanh thu vào<select id="s-group" data-s="group">${Object.entries(GROUP).map(([k,v])=>`<option value="${k}" ${sd.group===k?'selected':''}>${v}</option>`).join('')}</select></label></div>
    <datalist id="catlist">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
-   <label class="f" id="pct" ${sd.group==='combo'?'':'hidden'}>Phần hoa trong combo (%)<input id="s-pct" data-s="hoaPct" type="number" min="0" max="100" inputmode="numeric" value="${sd.hoaPct??50}"><span class="hint">Dùng để chia tiền combo cho Bánh và Hoa trong báo cáo.</span></label>
-   <section><h2>${id?'Đổi giá':'Giá'}</h2>${newP}<p class="hint">Giá mới dùng cho các ngày từ mốc này trở đi. Ngày trước đó giữ giá cũ. Đơn đặt đã tạo giữ đúng giá đã ghi trên đơn.</p>
+      <section><h2>${id?'Đổi giá':'Giá'}</h2>${newP}<p class="hint">Giá mới dùng cho các ngày từ mốc này trở đi. Ngày trước đó giữ giá cũ. Đơn đặt đã tạo giữ đúng giá đã ghi trên đơn.</p>
     ${id?`<h2>Các mốc giá</h2><div class="rows" id="plist">${pricesHtml()}</div>`:''}</section>
    ${id?`<label class="check"><input id="s-active" data-s="active" type="checkbox" ${sd.active!==false?'checked':''}>Đang bán</label>`:''}`,
-   `<span class="sum"></span>${readOnly?'':'<button class="btn primary" data-act="saveproduct">Lưu</button>'}`);
+   `<span class="sum"></span><button class="btn primary" data-act="saveproduct">Lưu</button>`);
 }
 function takePrice(){
   const pr=parseMoney($('n-price').value),from=$('n-from').value;
@@ -751,7 +871,7 @@ function openSource(id){
    <label class="f">Tên nguồn<input id="n-name" data-n="name" value="${esc(nd.name)}" placeholder="Ví dụ: Mứt dâu"></label>
    <label class="f">Thuộc nhóm<select id="n-group" data-n="group">${Object.entries(COST).map(([k,v])=>`<option value="${k}" ${nd.group===k?'selected':''}>${v}</option>`).join('')}</select></label>
    ${id?`<label class="check"><input id="n-active" data-n="active" type="checkbox" ${nd.active!==false?'checked':''}>Còn dùng</label><p class="hint">Nguồn ngừng dùng sẽ ẩn khỏi danh sách chọn, các khoản đã ghi vẫn được giữ.</p>`:''}`,
-   `<span class="sum"></span>${readOnly?'':'<button class="btn primary" data-act="savesource">Lưu</button>'}`);
+   `<span class="sum"></span><button class="btn primary" data-act="savesource">Lưu</button>`);
 }
 async function saveSource(btn){
   if(!nd.name.trim())return sheetErr('Hãy nhập tên nguồn.');
@@ -768,10 +888,13 @@ async function exportCsv(){
     const m=data(y+'-'+pad(i));
     for(const[d,doc]of Object.entries(m.retail).sort()){
       for(const[pid,qty]of Object.entries(doc.items||{})){if(!qty)continue;const p=P.products[pid],pr=priceAt(p,d);rows.push(['Bán lẻ',d,p?.name||'',GROUP[p?.group]||'',qty,pr,qty*pr,'','',''])}
-      if(doc.otherBanh)rows.push(['Bán lẻ',d,'Bán khác','Bánh','','',doc.otherBanh,'','','']);
-      if(doc.otherHoa)rows.push(['Bán lẻ',d,'Bán khác','Hoa','','',doc.otherHoa,'','','']);
+      for(const[k,g]of[['otherBanh','Bánh'],['otherHoa','Hoa'],['otherCombo','Combo']])if(doc[k])rows.push(['Bán lẻ',d,'Bán khác',g,'','',doc[k],'','','']);
+      if(doc.ck)rows.push(['Thu bán lẻ',d,'Chuyển khoản','','','',doc.ck,'','','']);
     }
-    for(const o of Object.values(m.orders))for(const l of o.lines||[])rows.push(['Đơn đặt',o.date,l.name,GROUP[l.group]||'',l.qty,l.price,l.qty*l.price,STATUS[o.status],o.customer||'',l.note||'']);
+    for(const o of Object.values(m.orders)){
+      for(const l of o.lines||[])rows.push(['Đơn đặt',o.date,l.name,GROUP[l.group]||'',l.qty,l.price,l.qty*l.price,STATUS[o.status],o.customer||'',l.note||'']);
+      for(const p of paysOf(o))rows.push(['Thu tiền đơn',p.date,METHOD[p.method]||'Chưa ghi','','','',p.amount,STATUS[o.status],o.customer||'','']);
+    }
     for(const e of Object.values(m.purchases)){const s=P.sources[e.sourceId];rows.push(['Nhập hàng',e.date,s?.name||'',COST[s?.group]||'','','',e.amount,'','',e.note||''])}
   }
   try{await dl.save({filename:`huyen-cake-${y}.csv`,data:'﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n')});toast('Đã tải file')}
@@ -786,6 +909,8 @@ document.addEventListener('click',async ev=>{
   switch(a){
    case'ym':state.ym=shiftYm(state.ym,+k);focusMonths();armLoadTimer();render();break;
    case'st':state.st=k;render();break;
+   case'og':state.og=k;render();break;
+   case'rg':state.rg=k;render();break;
    case'day':case'goday':{const d=a==='day'?shiftDay(state.day,+k):k;if(d<START)break;await flushRetail();state.day=d;state.ym=ymOf(d);focusMonths();render();break}
    case'qty':{const d=state.day,cur=retailView(d).items?.[id]||0,q=Math.max(0,cur+ +k);touchRetail(d,{items:{[id]:q}});render();break}
    case'ry':state.repYear+=+k;state.repMonth='all';loadYear();break;
@@ -795,10 +920,27 @@ document.addEventListener('click',async ev=>{
    case'order':openOrder(id,ym);break;
    case'purchase':openPurchase(id,ym);break;
    case'product':openProduct(id);break;
+   case'customer':openCustomer(id);break;
+   case'pay':openPay(id,ym);break;
    case'source':openSource(id);break;
    case'close':closeSheet();break;
-   case'done':case'paid':{const ref=db.collection('m/'+ym+'/orders').doc(id);b.disabled=true;try{await write(()=>ref.update(stamp(a==='done'?{status:'xong'}:{paidFull:true})));toast(a==='done'?'Đã cộng đơn vào doanh thu':'Đã ghi thu đủ')}catch(e){toast(dbFail(e));b.disabled=false}break}
-   case'ship':od.ship=k==='1';b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('addr').hidden=!od.ship;break;
+   case'done':{const ref=db.collection('m/'+ym+'/orders').doc(id);b.disabled=true;try{await write(()=>ref.update(stamp({status:'xong'})));toast('Đã chuyển sang Đã giao')}catch(e){toast(dbFail(e));b.disabled=false}break}
+   case'payby':{
+     const o=data(payT.ym).orders[payT.id];if(!o)break;
+     const payments=[...paysOf(o).map(p=>({...p})),{date:workDay(),amount:orderLeft(o),method:k}];
+     const ok=await saving2(b,()=>db.collection('m/'+payT.ym+'/orders').doc(payT.id).update(stamp({payments})));
+     if(ok){closeSheet();toast('Đã ghi thu đủ bằng '+METHOD[k].toLowerCase())}break}
+   case'armdel':{
+     if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Bấm lần nữa để xóa';setTimeout(()=>{if(b.isConnected){b.classList.remove('armed');b.textContent='Xóa'}},4000);break}
+     b.disabled=true;
+     try{await write(()=>db.collection('m/'+ym+'/'+b.dataset.kind).doc(id).delete());toast('Đã xóa')}catch(e){toast(dbFail(e));b.disabled=false}break}
+   case'ship':setShip(k==='1');break;
+   case'pickcust':{const c=P.customers[id];od.customerId=id;od.customer=c.name||'';od.contact=c.contact||'';$('o-customer').value=od.customer;$('o-contact').value=od.contact;custSug();addrChips();break}
+   case'useaddr':{const c=P.customers[od.customerId||customerKey(od.customer,od.contact)],i=+b.dataset.i;if(i<0){setShip(false);od.address='';$('o-address').value=''}else{setShip(true);od.address=c.addresses[i];$('o-address').value=od.address}break}
+   case'addpay':od.payments.push({date:workDay(),amount:orderLeft(od),method:'tm'});$('pays').innerHTML=paysHtml();odSum();break;
+   case'rmpay':od.payments.splice(+b.dataset.i,1);$('pays').innerHTML=paysHtml();odSum();break;
+   case'rmaddr':cd.addresses.splice(+b.dataset.i,1);$('c-addr').innerHTML=custAddrHtml();break;
+   case'savecustomer':{const{id:cid,...rest}=cd;const ok=await saving2(b,()=>db.collection('customers').doc(cid).set(stamp({...rest,name:rest.name.trim(),contact:(rest.contact||'').trim()})));if(ok){closeSheet();toast('Đã lưu khách')}break}
    case'addline':od.lines.push({pid:'',name:'',note:'',qty:1,price:0,group:'banh'});$('lines').innerHTML=linesHtml();odSum();break;
    case'rmline':od.lines.splice(+b.dataset.i,1);$('lines').innerHTML=linesHtml();odSum();break;
    case'saveorder':saveOrder(b);break;
@@ -809,7 +951,7 @@ document.addEventListener('click',async ev=>{
    case'rmprice':sd.prices=sd.prices.filter(e=>e.from!==k);$('plist').innerHTML=pricesHtml();break;
    case'arm':{
      if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Bấm lần nữa để xóa';break}
-     const ok=await saving2(b,()=>b.dataset.then==='delorder'?db.collection('m/'+od.oldYm+'/orders').doc(od.id).delete():db.collection('m/'+pd.oldYm+'/purchases').doc(pd.id).delete());
+     const t=b.dataset.then,ok=await saving2(b,()=>t==='delorder'?db.collection('m/'+od.oldYm+'/orders').doc(od.id).delete():t==='delcustomer'?db.collection('customers').doc(cd.id).delete():db.collection('m/'+pd.oldYm+'/purchases').doc(pd.id).delete());
      if(ok){closeSheet();toast('Đã xóa')}break}
   }
 });
@@ -817,9 +959,19 @@ document.addEventListener('input',ev=>{
   const t=ev.target;
   if(t.hasAttribute('data-money')){t.value=fmtInput(parseMoney(t.value))}
   if(t.id==='q'){state.q=t.value;$('olist').innerHTML=orderListHtml();return}
+  if(t.id==='cq'){state.cq=t.value;$('clist').innerHTML=customerRows();return}
+  if(t.dataset.other){
+    touchRetail(state.day,{[t.dataset.other]:parseMoney(t.value)});
+    const m=retailMoney(retailView(state.day),state.day);$('rt-total').textContent=money(m.t);$('rt-line').textContent=m.line;return;
+  }
+  if(t.dataset.pay!==undefined){
+    const p=od.payments[+t.dataset.pay],f=t.dataset.pf;p[f]=f==='amount'?parseMoney(t.value):t.value||null;odSum();return;
+  }
+  if(t.dataset.c){cd[t.dataset.c]=t.value;return}
   const val=t.type==='checkbox'?t.checked:t.hasAttribute('data-money')?parseMoney(t.value):t.value;
   if(t.dataset.o){
     od[t.dataset.o]=val;
+    if(t.dataset.o==='customer'||t.dataset.o==='contact'){od.customerId=od.id?od.customerId:null;custSug();addrChips()}
     if(t.dataset.o==='date'&&val){for(const l of od.lines)if(l.pid&&!l.manual)l.price=priceAt(P.products[l.pid],val);$('lines').innerHTML=linesHtml()}
     odSum();
   }else if(t.dataset.lf){
@@ -828,7 +980,7 @@ document.addEventListener('input',ev=>{
     else if(f==='price'){l.price=val;l.manual=true}
     else if(f==='pid'){
       const p=P.products[val];l.pid=val;l.manual=false;
-      if(p){l.name=p.name;l.group=p.group;l.hoaPct=p.hoaPct;l.price=priceAt(p,od.date)}else{l.name='';l.price=0;l.group='banh';delete l.hoaPct}
+      if(p){l.name=p.name;l.group=p.group;l.price=priceAt(p,od.date)}else{l.name='';l.price=0;l.group='banh'}
       $('lines').innerHTML=linesHtml();
     }else l[f]=val;
     odSum();
@@ -836,15 +988,13 @@ document.addEventListener('input',ev=>{
     pd[t.dataset.p]=val;
     if(t.dataset.p==='sourceId'){pd.newSrc=val==='__new';$('newsrc').hidden=!pd.newSrc;if(pd.newSrc)$('b-sn').focus()}
   }else if(t.dataset.s){
-    sd[t.dataset.s]=t.dataset.s==='hoaPct'?Math.min(100,Math.max(0,Number(t.value)||0)):val;
-    if(t.dataset.s==='group')$('pct').hidden=val!=='combo';
+    sd[t.dataset.s]=val;
   }else if(t.dataset.n){nd[t.dataset.n]=val}
 });
 document.addEventListener('change',ev=>{
   const t=ev.target;
   if(t.id==='dayPick'&&t.value>=START){flushRetail().then(()=>{state.day=t.value;state.ym=ymOf(t.value);focusMonths();t.blur();render()})}
   if(t.dataset.qty){touchRetail(state.day,{items:{[t.dataset.qty]:Math.max(0,Math.floor(Number(t.value)||0))}});setTimeout(render,250)}
-  if(t.dataset.other){touchRetail(state.day,{[t.dataset.other]:parseMoney(t.value)});setTimeout(render,250)}
 });
 document.addEventListener('focusout',()=>{if(deferred){deferred=false;setTimeout(render,250)}});
 addEventListener('hashchange',route);
@@ -910,12 +1060,29 @@ async function start(fs,auth,u){
     if(!s.metadata.fromCache)flag();noteLoaded();schedule();
   },()=>setSync('off','Mất kết nối, hãy tải lại trang'));
   let a=false,b=false;const both=()=>{if(a&&b)catalogReady=true};
-  cat('products',()=>{a=true;both()});cat('sources',()=>{b=true;both()});
+  cat('products',()=>{a=true;both()});cat('sources',()=>{b=true;both()});cat('customers',()=>{});
+  backfill(fs);
   focusMonths();armLoadTimer();render();
   if(state.view==='baocao')loadYear();
 }
+/* Một lần duy nhất: tạo hồ sơ khách từ các đơn đã nhập trước khi có mục Khách hàng. */
+async function backfill(fs){
+  try{
+    const flag=fs.collection('meta').doc('khach');
+    if((await flag.get()).exists)return;
+    const map={};
+    for(let i=1;i<=12;i++){
+      const s=await fs.collection('m/2027-'+pad(i)+'/orders').get();
+      const list=s.docs.map(d=>d.data()).sort((a,b)=>a.date<b.date?-1:1);
+      for(const o of list){const k=customerKey(o.customer,o.contact);if(k)map[k]=mergeCustomer(map[k],o)}
+    }
+    const b=fs.batch();let n=0;
+    for(const[k,c]of Object.entries(map)){if(n++<400)b.set(fs.collection('customers').doc(k),c,{merge:true})}
+    b.set(flag,{done:true});await b.commit();
+  }catch(e){}
+}
 function boot(){
-  const h=location.hash.slice(1);if(TABS.some(t=>t[0]===h))state.view=h;renderTabs();
+  const h=location.hash.slice(1);if(VIEWS.includes(h))state.view=h;renderTabs();
   if(!window.firebase){setSync('off','Chưa tải được');showMsg('<div class="empty">Chưa tải được trang. Hãy kiểm tra mạng rồi tải lại.</div>');return}
   if(FIREBASE_CONFIG.apiKey==='DIEN_SAU'){setSync('off','Chưa cấu hình');showMsg('<div class="empty">Website chưa được nối với dự án Firebase.</div>');return}
   firebase.initializeApp(FIREBASE_CONFIG);
