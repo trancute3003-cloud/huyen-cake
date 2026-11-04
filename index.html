@@ -20,7 +20,7 @@
   --ink:#34172A; --muted:#75566A; --line:#EFD9E1;
   --accent:#B8235A; --on-accent:#FFFFFF; --leaf:#1F6B4B; --leaf-soft:#DDF1E7;
   --warn:#8A5A00; --warn-soft:#FCEFCF; --bad:#B3261E; --bad-soft:#FBE3E1; --info:#1B5F8F; --info-soft:#DDEDF8;
-  --c1:#B8235A; --c2:#1578BE;
+  --c1:#B8235A; --c2:#1578BE; --tag-l:90%; --tag-f:28%;
   --display:"Pacifico","Be Vietnam Pro",cursive;
   --body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --r:12px;
@@ -30,13 +30,13 @@
   --ink:#FBEFF4; --muted:#C4A9B8; --line:#4A2F3D;
   --accent:#F27DA6; --on-accent:#3A0C20; --leaf:#7AD3AB; --leaf-soft:#1E3A2D;
   --warn:#F2C76B; --warn-soft:#42320F; --bad:#FFA69E; --bad-soft:#4A1F1C; --info:#8CC8F0; --info-soft:#17344A;
-  --c1:#E4558A; --c2:#3A9BE0; color-scheme:dark}}
+  --c1:#E4558A; --c2:#3A9BE0; --tag-l:24%; --tag-f:84%; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1C1017; --surface:#291822; --sunken:#34202C; --band:#5A1E3A; --band-ink:#FFE3EE;
   --ink:#FBEFF4; --muted:#C4A9B8; --line:#4A2F3D;
   --accent:#F27DA6; --on-accent:#3A0C20; --leaf:#7AD3AB; --leaf-soft:#1E3A2D;
   --warn:#F2C76B; --warn-soft:#42320F; --bad:#FFA69E; --bad-soft:#4A1F1C; --info:#8CC8F0; --info-soft:#17344A;
-  --c1:#E4558A; --c2:#3A9BE0; color-scheme:dark}
+  --c1:#E4558A; --c2:#3A9BE0; --tag-l:24%; --tag-f:84%; color-scheme:dark}
 *{box-sizing:border-box}
 html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
 body{margin:0}
@@ -133,6 +133,7 @@ label.f textarea{min-height:70px;resize:vertical}
 .pill{display:inline-flex;align-items:center;border-radius:99px;padding:2px 9px;font-size:12px;font-weight:600;white-space:nowrap}
 .pill.moi{background:var(--warn-soft);color:var(--warn)}
 .pill.dang{background:var(--info-soft);color:var(--info)}
+.pill.ready{background:var(--leaf-soft);color:var(--leaf);outline:1px solid var(--leaf)}
 .pill.xong{background:var(--leaf-soft);color:var(--leaf)}
 .pill.huy{background:var(--sunken);color:var(--muted)}
 .pill.late{background:var(--bad-soft);color:var(--bad)}
@@ -259,6 +260,22 @@ a.btn.primary{color:var(--on-accent)}
 .lp-wide{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .lp-wide div{aspect-ratio:3/2;min-width:0}
 @media (max-width:640px){.lp-hero{grid-template-columns:1fr}.lp-grid{grid-template-columns:1fr 1fr}.lp-grid figure:last-child{grid-column:1/-1}.lp-grid figure:last-child div{aspect-ratio:3/2}.lp-main{order:-1;aspect-ratio:4/5}}
+.tag{display:inline-flex;align-items:center;border-radius:99px;padding:2px 11px;font-size:13px;font-weight:700;background:hsl(var(--h) 70% var(--tag-l));color:hsl(var(--h) 60% var(--tag-f));overflow-wrap:anywhere}
+.mk-sum{display:flex;flex-wrap:wrap;gap:6px}
+.mk-sum span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px 9px;font-size:13.500px;font-weight:600;font-variant-numeric:tabular-nums}
+.mk-sec{display:flex;flex-direction:column;gap:6px}
+.mk-head{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.mk{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 12px;border-top:1px solid var(--line)}
+.mk:first-child{border-top:0}
+.mk.isdone{opacity:.55}
+.mk.isdone .mk-name{text-decoration:line-through}
+.tick{width:38px;height:38px;border-radius:10px;border:2px solid var(--accent);background:none;color:var(--accent);font-size:20px;font-weight:700;line-height:1;padding:0}
+.tick[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.mk-main{min-width:0;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.mk-name{font-weight:600;overflow-wrap:anywhere}
+.mk-who{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.mk-who button{background:none;border:0;padding:0;color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px;font-size:13px;overflow-wrap:anywhere;text-align:left}
+.mk-end{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
 .homebar{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
 .homebar .seg{flex:1 1 320px;min-width:0}
 .homebar .seg button{line-height:1.25}
@@ -400,7 +417,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const $=id=>document.getElementById(id);
 
 let db=null,uid=null;
-const state={view:'homnay',ym:ymOf(workDay()),day:workDay(),st:'all',q:'',repYear:Number(workDay().slice(0,4)),repMonth:'all',priceTab:'banh',og:'all',rg:'banh',cq:'',homeMode:'today',homePick:workDay(),yearReady:false};
+const state={view:'homnay',ym:ymOf(workDay()),day:workDay(),st:'all',q:'',repYear:Number(workDay().slice(0,4)),repMonth:'all',priceTab:'banh',og:'all',rg:'banh',cq:'',homeMode:'today',homeTab:'don',mg:'all',homePick:workDay(),yearReady:false};
 const P={products:{},sources:{},customers:{}};let catalogReady=false;
 const M={};const watching={};
 const data=ym=>M[ym]||(M[ym]={orders:{},retail:{},purchases:{},ready:new Set()});
@@ -492,6 +509,7 @@ const sourcesSorted=()=>Object.entries(P.sources).map(([id,s])=>({id,...s})).sor
 function ticket(id,o){
   const t=orderTotal(o),left=orderLeft(o),paid=orderPaid(o),ym=ymOf(o.date),late=o.date<realToday()&&(o.status==='moi'||o.status==='dang');
   const lines=(o.lines||[]).map(l=>`<div class="tl"><span>${l.qty>1?l.qty+' × ':''}${esc(l.name||'Món khác')}</span>${l.note?`<mark class="tnote">${esc(l.note)}</mark>`:''}</div>`).join('');
+  const ln=(o.lines||[]).length,lm=(o.lines||[]).filter(l=>l.made).length,open=o.status==='moi'||o.status==='dang',ready=open&&ln>0&&lm===ln;
   const how=[...new Set(paysOf(o).map(p=>p.method).filter(Boolean))].map(m=>METHOD[m]).join(' + ');
   return`<article class="ticket ${o.status==='xong'||o.status==='huy'?'done':''}">
    <div class="when"><b>${esc(o.time)||dm(o.date)}</b><span>${o.time?dm(o.date):wd(o.date)}</span></div>
@@ -500,7 +518,7 @@ function ticket(id,o){
     ${lines||'<div class="tdesc">Chưa ghi món</div>'}
     <div class="tdesc">${o.ship?'Giao: '+(esc(o.address)||'chưa ghi địa chỉ'):'Khách lấy'}${o.contact?' · '+esc(o.contact):''}</div>
     ${o.note?`<mark class="tnote">${esc(o.note)}</mark>`:''}
-    <div class="tact"><span class="pill ${late?'late':o.status}">${late?'Quá hẹn':STATUS[o.status]}</span>
+    <div class="tact"><span class="pill ${late?'late':ready?'ready':o.status}">${late?'Quá hẹn':ready?'Làm xong, chờ giao':STATUS[o.status]}</span>${open&&lm&&!ready?`<span class="small muted num">Đã làm ${lm}/${ln}</span>`:''}
      ${o.status==='huy'?'':left>0?`<span class="small muted num">${paid?`Đã nhận ${money(paid)} · `:''}Còn thu ${money(left)}</span>`:`<span class="small muted">Đã thu đủ${how?' · '+how:''}</span>`}
      <span style="flex:1"></span>
      <button class="btn sm danger" data-act="armdel" data-kind="orders" data-id="${id}" data-ym="${ym}">Xóa</button>
@@ -509,8 +527,36 @@ function ticket(id,o){
     </div>
    </div></article>`;
 }
+const closed=o=>o.status==='xong'||o.status==='huy'?1:0;
 const orderSort=(a,b)=>(a[1].date+(a[1].time||'99')).localeCompare(b[1].date+(b[1].time||'99'));
 
+const hueOf=t=>[...String(t)].reduce((a,c)=>(a*31+c.charCodeAt(0))%360,7);
+/* Đơn bánh cần làm: gom từng món của các đơn theo loại. Dùng chung dữ liệu với Đơn hàng theo ngày. */
+function vMake(list,d){
+  const items=[];
+  for(const[id,o]of list)(o.lines||[]).forEach((l,i)=>{
+    const p=P.products[l.pid],g=GROUP[l.group]?l.group:'banh';
+    if(state.mg!=='all'&&g!==state.mg)return;
+    items.push({id,o,l,i,cat:p?.cat||(g==='banh'?'Bánh khác':GROUP[g]),rank:p?.o??999,done:!!l.made||o.status==='xong'});
+  });
+  const filter=`<div class="chips">${[['all','Tất cả'],...Object.entries(GROUP)].map(([k,l])=>`<button class="chip" data-act="mg" data-k="${k}" aria-pressed="${state.mg===k}">${l}</button>`).join('')}</div>`;
+  if(!items.length)return filter+'<div class="empty">Không có món nào cần làm trong ngày này.</div>';
+  const qty=x=>x.l.qty||0,left=items.filter(x=>!x.done),sum={};
+  for(const x of left)sum[x.l.name]=(sum[x.l.name]||0)+qty(x);
+  const cats=[];
+  for(const x of items){let c=cats.find(y=>y.cat===x.cat);if(!c)cats.push(c={cat:x.cat,rank:x.rank,rows:[]});c.rank=Math.min(c.rank,x.rank);c.rows.push(x)}
+  cats.sort((a,b)=>a.rank-b.rank);
+  const row=x=>{const o=x.o,ym=ymOf(o.date),shipped=o.status==='xong',allMade=(o.lines||[]).every(l=>l.made);
+    return`<div class="mk ${x.done?'isdone':''}">
+     <button class="tick" data-act="made" data-id="${x.id}" data-ym="${ym}" data-i="${x.i}" aria-pressed="${x.done}" aria-label="Đã làm ${esc(x.l.name)}" ${shipped?'disabled':''}>${x.done?'✓':''}</button>
+     <div class="mk-main"><span class="mk-name">${x.l.qty>1?x.l.qty+' × ':''}${esc(x.l.name||'Món khác')}</span>${x.l.note?`<mark class="tnote">${esc(x.l.note)}</mark>`:''}${o.note?`<mark class="tnote">${esc(o.note)}</mark>`:''}
+      <span class="mk-who"><button data-act="order" data-id="${x.id}" data-ym="${ym}">${esc(o.customer)||'Khách lẻ'}</button>${o.date!==d?' · Quá hẹn '+dm(o.date):''}${o.ship?' · Giao: '+(esc(o.address)||'chưa ghi'):' · Khách lấy'}</span></div>
+     <div class="mk-end"><span>${esc(o.time)||wd(o.date)}</span><span class="small muted">${money((x.l.qty||0)*(x.l.price||0))}</span>${!shipped&&allMade?`<button class="btn sm primary" data-act="done" data-id="${x.id}" data-ym="${ym}">Đã giao</button>`:''}</div></div>`};
+  return filter+`<p class="small muted num">Còn ${left.reduce((a,x)=>a+qty(x),0)} món cần làm, đã xong ${items.length-left.length}/${items.length} dòng.</p>
+  ${Object.keys(sum).length?`<div class="mk-sum">${Object.entries(sum).map(([n,q])=>`<span>${esc(n)}: ${q}</span>`).join('')}</div>`:''}
+  ${cats.map(c=>{const rows=[...c.rows].sort((a,b)=>a.done-b.done||a.rank-b.rank||String(a.o.time||'99').localeCompare(String(b.o.time||'99')));
+   return`<section class="mk-sec"><div class="mk-head"><span class="tag" style="--h:${hueOf(c.cat)}">${esc(c.cat)}</span><span class="small muted num">Còn ${c.rows.filter(x=>!x.done).reduce((a,x)=>a+qty(x),0)} món</span></div><div class="rows">${rows.map(row).join('')}</div></section>`}).join('')}`;
+}
 const homeDay=()=>state.homeMode==='tomorrow'?shiftDay(workDay(),1):state.homeMode==='pick'?state.homePick:workDay();
 function watchDay(d){const ym=ymOf(d);watch(ym);watch(shiftYm(ym,1))}
 function vHome(){
@@ -533,10 +579,11 @@ function vHome(){
     <div class="stat"><span>Doanh thu tháng ${+ym.slice(5)}</span><b>${money(mon.revTotal)}</b><small>Tính đến ${dm(d)}</small></div>
   </div>
   <p class="small muted num">${splitLine(today.got)}</p>
-  ${late.length?`<section><h2>Quá hẹn, chưa bấm Đã giao (${late.length})</h2><div class="list">${late.map(([i,o])=>ticket(i,o)).join('')}</div></section>`:''}
+  <div class="seg">${[['don','Đơn hàng theo ngày'],['lam','Đơn bánh cần làm']].map(([k,l])=>`<button data-act="ht" data-k="${k}" aria-pressed="${state.homeTab===k}">${l}</button>`).join('')}</div>
+  ${state.homeTab==='lam'?vMake([...late,...tod],d):`${late.length?`<section><h2>Quá hẹn, chưa bấm Đã giao (${late.length})</h2><div class="list">${late.map(([i,o])=>ticket(i,o)).join('')}</div></section>`:''}
   <section><h2>Đơn giao ${title}, ${wd(d)} ${dm(d)} (${tod.length})</h2>
-   ${tod.length?`<div class="list">${tod.map(([i,o])=>ticket(i,o)).join('')}</div>`:'<div class="empty">Chưa có đơn nào giao trong ngày này.</div>'}</section>
-  ${soon.length?`<section><h2>7 ngày sau đó (${soon.length})</h2><div class="list">${soon.map(([i,o])=>ticket(i,o)).join('')}</div></section>`:''}`;
+   ${tod.length?`<div class="list">${[...tod].sort((a,b)=>closed(a[1])-closed(b[1])||orderSort(a,b)).map(([i,o],n,arr)=>(closed(o)&&(n===0||!closed(arr[n-1][1]))?`<div class="day-h">Đã giao (${arr.filter(x=>closed(x[1])).length})</div>`:'')+ticket(i,o)).join('')}</div>`:'<div class="empty">Chưa có đơn nào giao trong ngày này.</div>'}</section>
+  ${soon.length?`<section><h2>7 ngày sau đó (${soon.length})</h2><div class="list">${soon.map(([i,o])=>ticket(i,o)).join('')}</div></section>`:''}`}`;
 }
 
 function orderListHtml(){
@@ -544,7 +591,10 @@ function orderListHtml(){
   const rows=Object.entries(data(state.ym).orders).filter(([,o])=>(state.st==='all'||o.status===state.st)&&(state.og==='all'||(o.lines||[]).some(l=>(l.group||'banh')===state.og))&&(!q||((o.customer||'')+' '+(o.contact||'')+' '+(o.lines||[]).map(l=>l.name+' '+(l.note||'')).join(' ')).toLowerCase().includes(q))).sort(orderSort);
   if(!rows.length)return`<div class="empty">${q||state.st!=='all'||state.og!=='all'?'Không có đơn khớp bộ lọc này.':'Tháng này chưa có đơn nào.'+' <button class="btn primary" data-act="order">Thêm đơn đầu tiên</button>'}</div>`;
   const t=workDay(),rank=o=>o.date===t?0:o.date>t?1:2;
-  rows.sort((a,b)=>rank(a[1])-rank(b[1])||(rank(a[1])===2?orderSort(b,a):orderSort(a,b)));
+  rows.sort((a,b)=>{
+    if(a[1].date!==b[1].date)return rank(a[1])-rank(b[1])||(rank(a[1])===2?orderSort(b,a):orderSort(a,b));
+    return closed(a[1])-closed(b[1])||orderSort(a,b);
+  });
   let out='',d='';
   for(const[id,o]of rows){
     if(o.date!==d){d=o.date;out+=`<div class="day-h num">${d===t?'Hôm nay, ':''}${wd(d)}, ${dm(d)}</div>`}
@@ -1074,8 +1124,15 @@ document.addEventListener('click',async ev=>{
    case'savecustomer':{const{id:cid,...rest}=cd;const ok=await saving2(b,()=>db.collection('customers').doc(cid).set(stamp({...rest,name:rest.name.trim(),contact:(rest.contact||'').trim()})));if(ok){closeSheet();toast('Đã lưu khách')}break}
    case'lgroup':{const l=od.lines[+b.dataset.i];if(l.group!==k){Object.assign(l,{group:k,pid:'',name:'',price:0,manual:false,pick:false,custom:false})}$('lines').innerHTML=linesHtml();odSum();break}
    case'lpick':{const l=od.lines[+b.dataset.i],p=P.products[id];Object.assign(l,{pid:id,name:p.name,group:p.group,price:priceAt(p,od.date),manual:false,pick:false,custom:false});$('lines').innerHTML=linesHtml();odSum();break}
-   case'lchange':{const l=od.lines[+b.dataset.i];Object.assign(l,{pid:'',name:'',price:0,pick:false,custom:false,manual:false});$('lines').innerHTML=linesHtml();odSum();break}
+   case'lchange':{const l=od.lines[+b.dataset.i];Object.assign(l,{pid:'',name:'',price:0,pick:false,custom:false,manual:false,made:false});$('lines').innerHTML=linesHtml();odSum();break}
    case'lcustom':{const l=od.lines[+b.dataset.i];l.custom=true;$('lines').innerHTML=linesHtml();$('l'+b.dataset.i+'n')?.focus();break}
+   case'ht':state.homeTab=k;render();break;
+   case'mg':state.mg=k;render();break;
+   case'made':{
+     const o=data(ym).orders[id];if(!o)break;
+     const i=+b.dataset.i,lines=o.lines.map((l,j)=>j===i?{...l,made:!l.made}:l),patch={lines};
+     if(o.status==='moi'&&lines.some(l=>l.made))patch.status='dang';
+     b.disabled=true;try{await write(()=>db.collection('m/'+ym+'/orders').doc(id).update(stamp(patch)))}catch(e){toast(dbFail(e));b.disabled=false}break}
    case'hm':state.homeMode=k;if(k==='pick'&&state.homePick<START)state.homePick=workDay();watchDay(homeDay());render();break;
    case'mx':exportXlsx([k],'huyen-cake-'+k);break;
    case'addline':od.lines.push({pid:'',name:'',note:'',qty:1,price:0,group:'banh'});$('lines').innerHTML=linesHtml();odSum();break;
