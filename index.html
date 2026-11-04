@@ -55,7 +55,7 @@ button{cursor:pointer}
 .band{background:var(--band);color:var(--band-ink);position:relative;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 12px;margin-bottom:22px}
 .band::after{content:"";position:absolute;left:0;right:0;bottom:-11px;height:12px;background:radial-gradient(circle at 12px 0,var(--band) 11.5px,transparent 12px) 0 0/24px 12px repeat-x}
 .band-in{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.brand{font-family:var(--display);font-size:25px;line-height:1.3;font-weight:400;display:flex;align-items:center;gap:9px;min-width:0}
+.brand{font-family:var(--display);font-size:25px;line-height:1.3;font-weight:400;display:flex;align-items:center;gap:9px;min-width:0;color:inherit;text-decoration:none}
 .brand img{flex:none;border-radius:9px}
 @media (max-width:420px){.brand{font-size:21px}}
 .who{margin-left:auto}
@@ -235,6 +235,30 @@ mark.tnote{display:block;background:var(--warn-soft);color:var(--ink);font-weigh
 .pick.other{border-style:dashed;color:var(--accent)}
 .chosen{display:flex;align-items:center;gap:10px;background:var(--sunken);border-radius:10px;padding:8px 10px;font-weight:600;overflow-wrap:anywhere}
 .chosen span{flex:1;min-width:0}
+.lp{display:flex;flex-direction:column;gap:28px}
+.lp-hero{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center}
+.lp-copy{display:flex;flex-direction:column;gap:12px;align-items:flex-start;min-width:0}
+.lp-copy h1{font-family:var(--display);font-weight:400;font-size:clamp(36px,6vw,54px);line-height:1.25;text-wrap:balance;color:var(--accent)}
+.lp-kicker{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lp-copy p{font-size:17px;max-width:42ch}
+.lp-acts{display:flex;gap:8px;flex-wrap:wrap;padding-top:4px}
+.lp-acts a{text-decoration:none}
+.lp-flag{display:inline-block;background:var(--leaf-soft);color:var(--leaf);font-weight:700;font-size:13.500px;border-radius:99px;padding:4px 12px}
+.lp-main,.lp-grid figure div,.lp-wide div{position:relative;overflow:hidden;border-radius:var(--r)}
+.lp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+a.btn{color:var(--ink)}
+a.btn.primary{color:var(--on-accent)}
+.lp-main{aspect-ratio:2/3;min-width:0}
+.lp-main img{object-position:50% 0}
+.lp h2{font-size:20px}
+.lp-sec{display:flex;flex-direction:column;gap:10px}
+.lp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.lp-grid figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+.lp-grid figure div{aspect-ratio:4/5;min-width:0}
+.lp-grid figcaption{font-size:14px;font-weight:600}
+.lp-wide{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lp-wide div{aspect-ratio:3/2;min-width:0}
+@media (max-width:640px){.lp-hero{grid-template-columns:1fr}.lp-grid{grid-template-columns:1fr 1fr}.lp-grid figure:last-child{grid-column:1/-1}.lp-grid figure:last-child div{aspect-ratio:3/2}.lp-main{order:-1;aspect-ratio:4/5}}
 .homebar{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
 .homebar .seg{flex:1 1 320px;min-width:0}
 .homebar .seg button{line-height:1.25}
@@ -249,7 +273,7 @@ td .btn{vertical-align:middle}
 
 <header class="band">
   <div class="band-in">
-    <div class="brand"><img src="icon.svg" alt="" width="36" height="36">Huyền Cake &amp; Flowers</div>
+    <a class="brand" href="#trangchu" aria-label="Trang chủ Huyền Cake &amp; Flowers"><img src="icon.svg" alt="" width="36" height="36">Huyền Cake &amp; Flowers</a>
     <div class="who" id="who" hidden></div><div class="sync busy" id="sync" role="status"><i></i><span>Đang tải…</span></div>
     <nav class="tabs" id="tabs" aria-label="Các mục chính"></nav>
   </div>
@@ -420,7 +444,7 @@ function typing(){const a=document.activeElement;return a&&$('view').contains(a)
 function render(){
   if(typing()){deferred=true;return}
   const fid=document.activeElement?.id;
-  $('view').innerHTML=({homnay:vHome,don:vOrders,khach:vCustomers,banle:vRetail,nhap:vPurchases,baocao:vReport,banggia:vPrices}[state.view])();
+  $('view').innerHTML=({trangchu:vLanding,homnay:vHome,don:vOrders,khach:vCustomers,banle:vRetail,nhap:vPurchases,baocao:vReport,banggia:vPrices}[state.view])();
   if(state.view==='baocao')bindChart();
   if(fid&&$(fid)&&$('view').contains($(fid)))$(fid).focus({preventScroll:true});
   if($('sheet').open&&sheetOnData)sheetOnData();
@@ -428,12 +452,37 @@ function render(){
 function renderTabs(){
   $('tabs').innerHTML=TABS.map(([k,l])=>`<a href="#${k}" ${state.view===k||(state.view==='khach'&&k==='don')?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg><span>${l}</span></a>`).join('');
 }
-const VIEWS=[...TABS.map(t=>t[0]),'khach'];
+const VIEWS=[...TABS.map(t=>t[0]),'khach','trangchu'];
+const FANPAGE='https://www.facebook.com/profile.php?id=61556020798376';
+function vLanding(){
+  return`<div class="lp">
+  <section class="lp-hero">
+    <div class="lp-copy"><span class="lp-kicker">Tiệm bánh và hoa tươi</span>
+      <h1>Huyền Cake &amp; Flowers</h1>
+      <p>Bánh sinh nhật và bánh ngọt các loại, làm cho những ngày đáng nhớ.</p>
+      <span class="lp-flag">Sắp có thêm hoa tươi</span>
+      <div class="lp-acts"><a class="btn primary" href="${FANPAGE}" target="_blank" rel="noopener">Xem fanpage Facebook</a><a class="btn" href="#homnay">Mở sổ của tiệm</a></div>
+    </div>
+    <div class="lp-main"><img src="img/cua-tiem.jpg" alt="Mặt tiền tiệm Huyền Cake với bảng hiệu màu hồng và tủ bánh kính"></div>
+  </section>
+  <section class="lp-sec"><h2>Ở tiệm có gì</h2>
+    <div class="lp-grid">
+      <figure><div><img src="img/tu-banh.jpg" loading="lazy" alt="Tủ kính trưng bày bánh kem trang trí"></div><figcaption>Bánh kem trong tủ</figcaption></figure>
+      <figure><div><img src="img/hoa-tuoi.jpg" loading="lazy" alt="Giỏ hoa tươi nhiều màu đặt trước tiệm"></div><figcaption>Hoa tươi</figcaption></figure>
+      <figure><div><img src="img/banh-mini.jpg" style="object-position:62% 50%" loading="lazy" alt="Set bánh nhỏ trong hộp trong suốt bên cạnh bánh kem hồng"></div><figcaption>Set bánh nhỏ</figcaption></figure>
+    </div></section>
+  <section class="lp-sec"><h2>Đủ đồ cho một bữa tiệc sinh nhật</h2>
+    <div class="lp-wide"><div><img src="img/phu-kien.jpg" loading="lazy" alt="Nến chữ Happy Birthday và nến cầu vồng"></div><div><img src="img/mu-sinh-nhat.jpg" loading="lazy" alt="Mũ sinh nhật nhiều màu trên quầy kính"></div></div></section>
+  </div>`;
+}
+let authRef=null;
 function route(){
   const h=location.hash.slice(1);state.view=VIEWS.includes(h)?h:'homnay';
   if($('view').contains(document.activeElement))document.activeElement.blur();
-  deferred=false;renderTabs();render();window.scrollTo(0,0);
-  if(state.view==='baocao')loadYear();
+  deferred=false;renderTabs();
+  if(!db&&authRef&&state.view!=='trangchu')return showLogin(authRef);
+  $('tabs').hidden=!db;render();window.scrollTo(0,0);
+  if(state.view==='baocao'&&db)loadYear();
 }
 const monthSw=()=>{const[y,m]=state.ym.split('-');return`<div class="switch"><button data-act="ym" data-k="-1" aria-label="Tháng trước" ${state.ym<=START_YM?'disabled':''}>‹</button><b class="num">Tháng ${+m}/${y}</b><button data-act="ym" data-k="1" aria-label="Tháng sau">›</button></div>`};
 
@@ -1178,9 +1227,9 @@ function boot(){
   if(!window.firebase){setSync('off','Chưa tải được');showMsg('<div class="empty">Chưa tải được trang. Hãy kiểm tra mạng rồi tải lại.</div>');return}
   if(FIREBASE_CONFIG.apiKey==='DIEN_SAU'){setSync('off','Chưa cấu hình');showMsg('<div class="empty">Website chưa được nối với dự án Firebase.</div>');return}
   firebase.initializeApp(FIREBASE_CONFIG);
-  const auth=firebase.auth(),fs=firebase.firestore();
+  const auth=firebase.auth(),fs=firebase.firestore();authRef=auth;
   fs.settings({ignoreUndefinedProperties:true});
-  auth.onAuthStateChanged(u=>{u?start(fs,auth,u):showLogin(auth)});
+  auth.onAuthStateChanged(u=>{if(u)start(fs,auth,u);else if(state.view==='trangchu'){setSync('off','Chưa đăng nhập');$('tabs').hidden=true;render()}else showLogin(auth)});
 }
 boot();
 </script>
