@@ -6,7 +6,10 @@
 <meta name="theme-color" content="#F9CBDA">
 <meta name="robots" content="noindex">
 <title>Huyền Cake &amp; Flowers</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23B8235A'/%3E%3Cpath d='M8 23v-7h16v7zM11 16v-4h10v4M16 12V8' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Pacifico&display=swap">
@@ -52,7 +55,9 @@ button{cursor:pointer}
 .band{background:var(--band);color:var(--band-ink);position:relative;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 12px;margin-bottom:22px}
 .band::after{content:"";position:absolute;left:0;right:0;bottom:-11px;height:12px;background:radial-gradient(circle at 12px 0,var(--band) 11.5px,transparent 12px) 0 0/24px 12px repeat-x}
 .band-in{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.brand{font-family:var(--display);font-size:25px;line-height:1.3;font-weight:400}
+.brand{font-family:var(--display);font-size:25px;line-height:1.3;font-weight:400;display:flex;align-items:center;gap:9px;min-width:0}
+.brand img{flex:none;border-radius:9px}
+@media (max-width:420px){.brand{font-size:21px}}
 .who{margin-left:auto}
 .who[hidden]+.sync{margin-left:auto}
 .sync{font-size:12.5px;display:flex;align-items:center;gap:6px;min-width:0}
@@ -221,6 +226,20 @@ mark.tnote{display:block;background:var(--warn-soft);color:var(--ink);font-weigh
 .sug{display:flex;flex-wrap:wrap;gap:6px}
 .sug:empty{display:none}
 .paybtn{min-height:56px;font-size:16px}
+.pickgrid{display:flex;flex-direction:column;gap:8px}
+.pickcat{font-size:12.500px;font-weight:700;color:var(--muted);margin-bottom:-3px}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px}
+.pick{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:6px 9px;text-align:left;display:flex;flex-direction:column;font-size:13.500px;font-weight:600;line-height:1.3;min-height:44px;justify-content:center;overflow-wrap:anywhere}
+.pick:hover{border-color:var(--accent)}
+.pick small{font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.pick.other{border-style:dashed;color:var(--accent)}
+.chosen{display:flex;align-items:center;gap:10px;background:var(--sunken);border-radius:10px;padding:8px 10px;font-weight:600;overflow-wrap:anywhere}
+.chosen span{flex:1;min-width:0}
+.homebar{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+.homebar .seg{flex:1 1 320px;min-width:0}
+.homebar .seg button{line-height:1.25}
+.homebar .btns{display:flex;gap:8px}
+td .btn{vertical-align:middle}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -230,7 +249,7 @@ mark.tnote{display:block;background:var(--warn-soft);color:var(--ink);font-weigh
 
 <header class="band">
   <div class="band-in">
-    <div class="brand">Huyền Cake &amp; Flowers</div>
+    <div class="brand"><img src="icon.svg" alt="" width="36" height="36">Huyền Cake &amp; Flowers</div>
     <div class="who" id="who" hidden></div><div class="sync busy" id="sync" role="status"><i></i><span>Đang tải…</span></div>
     <nav class="tabs" id="tabs" aria-label="Các mục chính"></nav>
   </div>
@@ -356,8 +375,8 @@ const workDay=()=>{const t=realToday();return t<START?START:t};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=id=>document.getElementById(id);
 
-let db=null,uid=null,dl=null;
-const state={view:'homnay',ym:ymOf(workDay()),day:workDay(),st:'all',q:'',repYear:Number(workDay().slice(0,4)),repMonth:'all',priceTab:'banh',og:'all',rg:'banh',cq:'',yearReady:false};
+let db=null,uid=null;
+const state={view:'homnay',ym:ymOf(workDay()),day:workDay(),st:'all',q:'',repYear:Number(workDay().slice(0,4)),repMonth:'all',priceTab:'banh',og:'all',rg:'banh',cq:'',homeMode:'today',homePick:workDay(),yearReady:false};
 const P={products:{},sources:{},customers:{}};let catalogReady=false;
 const M={};const watching={};
 const data=ym=>M[ym]||(M[ym]={orders:{},retail:{},purchases:{},ready:new Set()});
@@ -443,37 +462,43 @@ function ticket(id,o){
 }
 const orderSort=(a,b)=>(a[1].date+(a[1].time||'99')).localeCompare(b[1].date+(b[1].time||'99'));
 
+const homeDay=()=>state.homeMode==='tomorrow'?shiftDay(workDay(),1):state.homeMode==='pick'?state.homePick:workDay();
+function watchDay(d){const ym=ymOf(d);watch(ym);watch(shiftYm(ym,1))}
 function vHome(){
-  const d=workDay(),ym=ymOf(d),cat=[P.products,P.sources];
+  const d=homeDay(),ym=ymOf(d),cat=[P.products,P.sources],mode=state.homeMode,now=workDay();
   const mm=[data(ym)],next=data(shiftYm(ym,1));
   const today=summarize(mm,...cat,d,d),mon=summarize(mm,...cat,ym+'-01',d);
   const all=[...Object.entries(mm[0].orders),...Object.entries(next.orders)];
   const open=o=>o.status==='moi'||o.status==='dang';
-  const late=all.filter(([,o])=>o.date<realToday()&&open(o)).sort(orderSort);
+  const late=mode==='today'?all.filter(([,o])=>o.date<realToday()&&open(o)).sort(orderSort):[];
   const tod=all.filter(([,o])=>o.date===d&&o.status!=='huy').sort(orderSort);
   const soon=all.filter(([,o])=>o.date>d&&o.date<=shiftDay(d,7)&&open(o)).sort(orderSort);
-  const preStart=realToday()<START;
-  return`<div class="head"><h1>${preStart?'Sổ bắt đầu từ 01/01/2027':`${wd(d)}, ${dmy(d)}`}</h1>
-    <button class="btn" data-act="purchase">Nhập hàng</button><button class="btn primary" data-act="order">Thêm đơn</button></div>
+  const title=mode==='today'?'hôm nay':mode==='tomorrow'?'ngày mai':'ngày '+dm(d);
+  const tabs=[['today',`Hôm nay (${dmy(now)})`],['tomorrow','Ngày mai'],['pick','Chọn ngày']];
+  return`<div class="homebar"><div class="seg">${tabs.map(([k,l])=>`<button data-act="hm" data-k="${k}" aria-pressed="${mode===k}">${l}</button>`).join('')}</div>
+    <div class="btns"><button class="btn" data-act="purchase">Nhập hàng</button><button class="btn primary" data-act="order">Thêm đơn</button></div></div>
+  ${mode==='pick'?`<label class="f">Ngày muốn xem<input id="homePick" type="date" min="${START}" value="${d}"></label>`:''}
   <div class="stats">
-    <div class="stat hero"><span>Doanh thu ngày ${dm(d)}</span><b>${money(today.revTotal)}</b><small>Đơn đặt ${money(today.orders)} · Bán lẻ ${money(today.retail)}</small></div>
+    <div class="stat hero"><span>Doanh thu ${title}</span><b>${money(today.revTotal)}</b><small>Đơn đặt ${money(today.orders)} · Bán lẻ ${money(today.retail)}</small></div>
     <div class="stat"><span>Đã nhận</span><b>${money(today.received)}</b><small>Còn thiếu ${money(today.left)}</small></div>
     <div class="stat"><span>Doanh thu tháng ${+ym.slice(5)}</span><b>${money(mon.revTotal)}</b><small>Tính đến ${dm(d)}</small></div>
   </div>
   <p class="small muted num">${splitLine(today.got)}</p>
   ${late.length?`<section><h2>Quá hẹn, chưa bấm Đã giao (${late.length})</h2><div class="list">${late.map(([i,o])=>ticket(i,o)).join('')}</div></section>`:''}
-  <section><h2>Đơn giao ${preStart?'ngày 01/01':'hôm nay'} (${tod.length})</h2>
+  <section><h2>Đơn giao ${title}, ${wd(d)} ${dm(d)} (${tod.length})</h2>
    ${tod.length?`<div class="list">${tod.map(([i,o])=>ticket(i,o)).join('')}</div>`:'<div class="empty">Chưa có đơn nào giao trong ngày này.</div>'}</section>
-  ${soon.length?`<section><h2>7 ngày tới (${soon.length})</h2><div class="list">${soon.map(([i,o])=>ticket(i,o)).join('')}</div></section>`:''}`;
+  ${soon.length?`<section><h2>7 ngày sau đó (${soon.length})</h2><div class="list">${soon.map(([i,o])=>ticket(i,o)).join('')}</div></section>`:''}`;
 }
 
 function orderListHtml(){
   const q=state.q.trim().toLowerCase();
   const rows=Object.entries(data(state.ym).orders).filter(([,o])=>(state.st==='all'||o.status===state.st)&&(state.og==='all'||(o.lines||[]).some(l=>(l.group||'banh')===state.og))&&(!q||((o.customer||'')+' '+(o.contact||'')+' '+(o.lines||[]).map(l=>l.name+' '+(l.note||'')).join(' ')).toLowerCase().includes(q))).sort(orderSort);
   if(!rows.length)return`<div class="empty">${q||state.st!=='all'||state.og!=='all'?'Không có đơn khớp bộ lọc này.':'Tháng này chưa có đơn nào.'+' <button class="btn primary" data-act="order">Thêm đơn đầu tiên</button>'}</div>`;
+  const t=workDay(),rank=o=>o.date===t?0:o.date>t?1:2;
+  rows.sort((a,b)=>rank(a[1])-rank(b[1])||(rank(a[1])===2?orderSort(b,a):orderSort(a,b)));
   let out='',d='';
   for(const[id,o]of rows){
-    if(o.date!==d){d=o.date;out+=`<div class="day-h num">${wd(d)}, ${dm(d)}</div>`}
+    if(o.date!==d){d=o.date;out+=`<div class="day-h num">${d===t?'Hôm nay, ':''}${wd(d)}, ${dm(d)}</div>`}
     out+=ticket(id,o);
   }
   return`<div class="list">${out}</div>`;
@@ -586,10 +611,11 @@ async function loadYear(){
     if(y===state.repYear){state.yearReady=true;schedule()}
   }catch(e){toast('Chưa tải được báo cáo. Hãy mở lại mục này.')}
 }
+const hasData=m=>Object.keys(m.orders).length+Object.keys(m.retail).length+Object.keys(m.purchases).length>0;
 function vReport(){
   const y=state.repYear,sel=state.repMonth,today=workDay();
   const head=`<div class="head"><h1>Báo cáo</h1><div class="switch"><button data-act="ry" data-k="-1" aria-label="Năm trước" ${y<=2027?'disabled':''}>‹</button><b class="num">Năm ${y}</b><button data-act="ry" data-k="1" aria-label="Năm sau">›</button></div>
-   <button class="btn" data-act="export" ${state.yearReady?'':'disabled'}>Tải file Excel (CSV)</button></div>`;
+   <button class="btn" data-act="export" ${state.yearReady?'':'disabled'}>Tải Excel cả năm</button></div>`;
   if(!state.yearReady)return head+'<div class="empty">Đang cộng số liệu cả năm…</div>';
   const cat=[P.products,P.sources],all=Array.from({length:12},(_,i)=>data(y+'-'+pad(i+1)));
   const upto=e=>e<today?e:today;
@@ -622,8 +648,8 @@ function vReport(){
    <section><h2>Chi nhiều nhất</h2>${src.length?`<div class="rows">${src.map(([n,v])=>`<div class="row"><span class="grow">${esc(n)}</span><span class="amt">${money(v)}</span></div>`).join('')}</div>`:'<div class="empty">Chưa có khoản nhập.</div>'}</section>
   </div>
   ${cus.length?`<section><h2>Khách quay lại</h2><div class="rows">${cus.map(([n,c])=>`<div class="row"><span class="grow">${esc(n)}<span class="sub">${c.n} đơn${c.contact?' · '+esc(c.contact):''}</span></span><span class="amt">${money(c.amt)}</span></div>`).join('')}</div></section>`:''}
-  <section><h2>Bảng từng tháng</h2><div class="tscroll"><table><thead><tr><th>Tháng</th><th>Doanh thu</th><th>Tiền nhập</th><th>Lợi nhuận</th></tr></thead><tbody>
-  ${months.map(m=>`<tr data-act="rm" data-k="${m.i}" class="${sel===m.i?'sel':''}"><td>Tháng ${m.i}</td><td>${money(m.s.revTotal)}</td><td>${money(m.s.costTotal)}</td>${neg(m.s.profit)}</tr>`).join('')}
+  <section><h2>Bảng từng tháng</h2><div class="tscroll"><table><thead><tr><th>Tháng</th><th>Doanh thu</th><th>Tiền nhập</th><th>Lợi nhuận</th><th>Excel</th></tr></thead><tbody>
+  ${months.map(m=>`<tr data-act="rm" data-k="${m.i}" class="${sel===m.i?'sel':''}"><td>Tháng ${m.i}</td><td>${money(m.s.revTotal)}</td><td>${money(m.s.costTotal)}</td>${neg(m.s.profit)}<td>${hasData(data(m.ym))?`<button class="btn sm" data-act="mx" data-k="${m.ym}">Tải</button>`:'–'}</td></tr>`).join('')}
   </tbody></table></div></section>`;
 }
 function niceMax(v){if(v<=0)return 1e6;const e=10**Math.floor(Math.log10(v));for(const k of[1,2,2.5,5,10])if(k*e>=v)return k*e;return 10*e}
@@ -689,20 +715,25 @@ async function saving2(btn,fn){
 
 /* đơn đặt */
 let od=null,payT=null;
-function productOptions(sel){
-  const groups={};for(const p of productsSorted()){if(p.active===false&&p.id!==sel)continue;const c=p.cat||GROUP[p.group];(groups[c]||(groups[c]=[])).push(p)}
-  return`<option value="">Tự ghi món khác</option>`+Object.entries(groups).map(([c,l])=>`<optgroup label="${esc(c)}">${l.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.name)}</option>`).join('')}</optgroup>`).join('');
+const NOTE_LABEL={banh:['Chữ trên bánh, yêu cầu riêng','Ví dụ: Mừng sinh nhật Mẹ'],hoa:['Lời ghi trên thiệp','Ví dụ: Chúc mừng 20/10'],combo:['Chữ trên bánh, lời trên thiệp','Ví dụ: Bánh ghi Happy Birthday, thiệp ghi Yêu mẹ']};
+function pickerHtml(l,i){
+  const list=productsSorted().filter(p=>p.active!==false&&(p.group||'banh')===l.group),cats=[];
+  for(const p of list){const c=p.cat||GROUP[p.group];let x=cats.find(y=>y.c===c);if(!x)cats.push(x={c,items:[]});x.items.push(p)}
+  return`<div class="pickgrid">${cats.map(c=>`${cats.length>1?`<div class="pickcat">${esc(c.c)}</div>`:''}<div class="picks">${c.items.map(p=>`<button class="pick" data-act="lpick" data-i="${i}" data-id="${p.id}">${esc(p.name)}<small>${money(priceAt(p,od.date))}</small></button>`).join('')}</div>`).join('')}
+   <div class="picks"><button class="pick other" data-act="lcustom" data-i="${i}">Món khác, tự ghi</button></div></div>`;
 }
 function linesHtml(){
-  return od.lines.map((l,i)=>`<div class="lineitem">
-    <label class="f">Món<select id="l${i}p" data-l="${i}" data-lf="pid">${productOptions(l.pid)}</select></label>
-    ${l.pid?'':`<div class="grid2"><label class="f">Tên món<input id="l${i}n" data-l="${i}" data-lf="name" value="${esc(l.name)}"></label>
-      <label class="f">Tính vào<select id="l${i}g" data-l="${i}" data-lf="group">${Object.entries(GROUP).map(([k,v])=>`<option value="${k}" ${l.group===k?'selected':''}>${v}</option>`).join('')}</select></label></div>`}
-    <label class="f">Chữ trên bánh, yêu cầu riêng<input id="l${i}d" data-l="${i}" data-lf="note" value="${esc(l.note)}" placeholder="Ví dụ: Mừng sinh nhật Mẹ"></label>
+  return od.lines.map((l,i)=>{
+    const g=GROUP[l.group]?l.group:'banh';l.group=g;
+    const custom=l.custom||(!l.pid&&l.name),picked=l.pid&&!l.pick,[nl,np]=NOTE_LABEL[g];
+    return`<div class="lineitem">
+    <div class="seg">${Object.entries(GROUP).map(([k,v])=>`<button data-act="lgroup" data-i="${i}" data-k="${k}" aria-pressed="${g===k}">${v}</button>`).join('')}</div>
+    ${picked?`<div class="chosen"><span>${esc(l.name)}</span><button class="btn sm" data-act="lchange" data-i="${i}">Đổi món</button></div>`:custom?`<label class="f">Tên món<input id="l${i}n" data-l="${i}" data-lf="name" value="${esc(l.name)}"></label><button class="linkish" data-act="lchange" data-i="${i}">Chọn từ danh sách ${GROUP[g].toLowerCase()}</button>`:pickerHtml(l,i)}
+    ${picked||custom?`<label class="f">${nl}<input id="l${i}d" data-l="${i}" data-lf="note" value="${esc(l.note)}" placeholder="${np}"></label>
     <div class="li3"><label class="f">Số lượng<input id="l${i}q" data-l="${i}" data-lf="qty" type="number" min="1" inputmode="numeric" value="${l.qty}"></label>
       <label class="f">Đơn giá${mi(`l${i}r`,`data-l="${i}" data-lf="price"`,l.price)}</label>
-      ${od.lines.length>1?`<button class="btn" data-act="rmline" data-i="${i}" aria-label="Bỏ món này">Bỏ</button>`:''}</div>
-  </div>`).join('');
+      ${od.lines.length>1?`<button class="btn" data-act="rmline" data-i="${i}" aria-label="Bỏ món này">Bỏ</button>`:''}</div>`:od.lines.length>1?`<button class="linkish" data-act="rmline" data-i="${i}">Bỏ món này</button>`:''}
+  </div>`}).join('');
 }
 function paysHtml(){
   return od.payments.map((p,i)=>`<div class="lineitem"><div class="grid2">
@@ -765,7 +796,7 @@ async function saveOrder(btn){
   if(!lines.length)return sheetErr('Hãy chọn ít nhất một món.');
   if(lines.some(l=>!(l.qty>0)))return sheetErr('Số lượng phải từ 1 trở lên.');
   const{id,oldYm,...rest}=od,ym=ymOf(od.date),col=db.collection('m/'+ym+'/orders'),ref=id?col.doc(id):col.doc();
-  const body=stamp({...rest,payments:od.payments.filter(p=>p.amount>0),lines:lines.map(l=>({...l,name:l.name||'Món khác'}))});
+  const body=stamp({...rest,payments:od.payments.filter(p=>p.amount>0),lines:lines.map(({pick,custom,...l})=>({...l,name:l.name||'Món khác'}))});
   const ckey=od.customerId||customerKey(od.customer,od.contact);
   if(ckey)body.customerId=ckey;
   const ok=await saving2(btn,async()=>{
@@ -880,25 +911,76 @@ async function saveSource(btn){
   if(!ok)return;closeSheet();toast('Đã lưu nguồn '+nd.name.trim());
 }
 
-/* xuất file */
-async function exportCsv(){
-  const y=state.repYear,q=v=>{const s=String(v??'');return /[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
-  const rows=[['Loại','Ngày','Tên','Nhóm','Số lượng','Đơn giá','Thành tiền','Trạng thái','Khách','Ghi chú']];
-  for(let i=1;i<=12;i++){
-    const m=data(y+'-'+pad(i));
-    for(const[d,doc]of Object.entries(m.retail).sort()){
-      for(const[pid,qty]of Object.entries(doc.items||{})){if(!qty)continue;const p=P.products[pid],pr=priceAt(p,d);rows.push(['Bán lẻ',d,p?.name||'',GROUP[p?.group]||'',qty,pr,qty*pr,'','',''])}
-      for(const[k,g]of[['otherBanh','Bánh'],['otherHoa','Hoa'],['otherCombo','Combo']])if(doc[k])rows.push(['Bán lẻ',d,'Bán khác',g,'','',doc[k],'','','']);
-      if(doc.ck)rows.push(['Thu bán lẻ',d,'Chuyển khoản','','','',doc.ck,'','','']);
-    }
-    for(const o of Object.values(m.orders)){
-      for(const l of o.lines||[])rows.push(['Đơn đặt',o.date,l.name,GROUP[l.group]||'',l.qty,l.price,l.qty*l.price,STATUS[o.status],o.customer||'',l.note||'']);
-      for(const p of paysOf(o))rows.push(['Thu tiền đơn',p.date,METHOD[p.method]||'Chưa ghi','','','',p.amount,STATUS[o.status],o.customer||'','']);
-    }
-    for(const e of Object.values(m.purchases)){const s=P.sources[e.sourceId];rows.push(['Nhập hàng',e.date,s?.name||'',COST[s?.group]||'','','',e.amount,'','',e.note||''])}
+/* xuất file Excel (.xlsx), tự đóng gói để không phụ thuộc thư viện ngoài */
+const crcT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(b){let c=~0;for(let i=0;i<b.length;i++)c=crcT[(c^b[i])&255]^(c>>>8);return(~c)>>>0}
+function zipStore(files){
+  const enc=new TextEncoder(),parts=[],central=[];let off=0;
+  const u16=n=>[n&255,n>>8&255],u32=n=>[n&255,n>>8&255,n>>16&255,n>>>24&255];
+  for(const[name,text]of files){
+    const nm=enc.encode(name),data=enc.encode(text),crc=crc32(data);
+    const common=[...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(33),...u32(crc),...u32(data.length),...u32(data.length),...u16(nm.length),...u16(0)];
+    const lh=Uint8Array.from([0x50,0x4b,3,4,...common,...nm]);
+    parts.push(lh,data);
+    central.push(Uint8Array.from([0x50,0x4b,1,2,...u16(20),...common,...u16(0),...u16(0),...u16(0),...u32(0),...u32(off),...nm]));
+    off+=lh.length+data.length;
   }
-  try{await dl.save({filename:`huyen-cake-${y}.csv`,data:'﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n')});toast('Đã tải file')}
-  catch(e){if(e?.code!=='declined')toast('Chưa tải được file.')}
+  const cs=central.reduce((a,c)=>a+c.length,0);
+  return new Blob([...parts,...central,Uint8Array.from([0x50,0x4b,5,6,0,0,0,0,...u16(files.length),...u16(files.length),...u32(cs),...u32(off),0,0])],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+const xe=v=>String(v??'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function sheetXml(rows){
+  const col=i=>String.fromCharCode(65+i),w=[];
+  const body=rows.map((r,y)=>{const bold=y===0||r.total;const cells=(r.total?r.cells:r).map((v,x)=>{
+    if(v===''||v==null)return'';
+    w[x]=Math.max(w[x]||8,Math.min(46,(typeof v==='number'?fmtInput(v):String(v)).length+2));
+    const ref=col(x)+(y+1);
+    return typeof v==='number'?`<c r="${ref}" s="${bold?3:2}"><v>${v}</v></c>`:`<c r="${ref}" t="inlineStr"${bold?' s="1"':''}><is><t xml:space="preserve">${xe(v)}</t></is></c>`}).join('');
+    return`<row r="${y+1}">${cells}</row>`}).join('');
+  const cols=w.map((n,i)=>`<col min="${i+1}" max="${i+1}" width="${n}" customWidth="1"/>`).join('');
+  return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>${cols?`<cols>${cols}</cols>`:''}<sheetData>${body}</sheetData></worksheet>`;
+}
+function workbook(sheets){
+  const n=sheets.length,ids=sheets.map((_,i)=>i+1);
+  return zipStore([
+   ['[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${ids.map(i=>`<Override PartName="/xl/worksheets/sheet${i}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`],
+   ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+   ['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${xe(s[0])}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`],
+   ['xl/_rels/workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${ids.map(i=>`<Relationship Id="rId${i}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i}.xml"/>`).join('')}<Relationship Id="rId${n+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+   ['xl/styles.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="1" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'],
+   ...sheets.map((s,i)=>[`xl/worksheets/sheet${i+1}.xml`,sheetXml(s[1])])
+  ]);
+}
+function buildSheets(yms){
+  const groupsOf=o=>[...new Set((o.lines||[]).map(l=>GROUP[l.group]||'Bánh'))].join(', ');
+  const dish=l=>`${l.qty>1?l.qty+' × ':''}${l.name||'Món khác'}${l.note?' ['+l.note+']':''}`;
+  const od=[['Ngày giao','Thứ','Giờ','Khách','Liên hệ','Nhận hàng','Địa chỉ','Món','Nhóm','Tổng tiền','Tiền mặt','Chuyển khoản','Chưa ghi hình thức','Còn thu','Trạng thái','Ghi chú']];
+  const rt=[['Ngày','Sản phẩm','Nhóm','Số lượng','Đơn giá','Thành tiền']];
+  const pu=[['Ngày','Nguồn nhập','Nhóm','Số tiền','Ghi chú']];
+  let sum=[0,0,0,0,0],rsum=0,cksum=0,psum=0;
+  for(const ym of yms){
+    const m=data(ym);
+    for(const[,o]of Object.entries(m.orders).sort(orderSort)){
+      const t=orderTotal(o),by={tm:0,ck:0,na:0};for(const p of paysOf(o))by[p.method||'na']+=p.amount||0;
+      const left=orderLeft(o);
+      od.push([dmy(o.date),wd(o.date),o.time||'',o.customer||'',o.contact||'',o.ship?'Giao':'Khách lấy',o.address||'',(o.lines||[]).map(dish).join('; '),groupsOf(o),t,by.tm,by.ck,by.na,left,STATUS[o.status],o.note||'']);
+      if(o.status!=='huy')[t,by.tm,by.ck,by.na,left].forEach((v,i)=>sum[i]+=v);
+    }
+    for(const[d,doc]of Object.entries(m.retail).sort()){
+      for(const[pid,q]of Object.entries(doc.items||{})){if(!q)continue;const p=P.products[pid],pr=priceAt(p,d);rt.push([dmy(d),p?.name||'',GROUP[p?.group]||'',q,pr,q*pr]);rsum+=q*pr}
+      for(const[k,g]of[['otherBanh','Bánh'],['otherHoa','Hoa'],['otherCombo','Combo']])if(doc[k]){rt.push([dmy(d),'Bán khác',g,'','',doc[k]]);rsum+=doc[k]}
+      cksum+=doc.ck||0;
+    }
+    for(const[,e]of Object.entries(m.purchases).sort((a,b)=>a[1].date<b[1].date?-1:1)){const s=P.sources[e.sourceId];pu.push([dmy(e.date),s?.name||'',COST[s?.group]||'',e.amount,e.note||'']);psum+=e.amount||0}
+  }
+  od.push({total:true,cells:['Tổng (không tính đơn hủy)','','','','','','','','',...sum]});
+  rt.push({total:true,cells:['Tổng bán lẻ','','','','',rsum]},{total:true,cells:['Trong đó chuyển khoản','','','','',cksum]});
+  pu.push({total:true,cells:['Tổng tiền nhập','','',psum]});
+  return[['Đơn hàng',od],['Bán lẻ',rt],['Nhập hàng',pu]];
+}
+function exportXlsx(yms,name){
+  const a=document.createElement('a');a.href=URL.createObjectURL(workbook(buildSheets(yms)));a.download=name+'.xlsx';
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('Đã tải '+name+'.xlsx');
 }
 
 /* sự kiện */
@@ -916,7 +998,7 @@ document.addEventListener('click',async ev=>{
    case'ry':state.repYear+=+k;state.repMonth='all';loadYear();break;
    case'rm':state.repMonth=k==='all'?'all':+k;render();break;
    case'ptab':state.priceTab=k;render();break;
-   case'export':exportCsv();break;
+   case'export':exportXlsx(Array.from({length:12},(_,i)=>state.repYear+'-'+pad(i+1)),'huyen-cake-'+state.repYear);break;
    case'order':openOrder(id,ym);break;
    case'purchase':openPurchase(id,ym);break;
    case'product':openProduct(id);break;
@@ -941,6 +1023,12 @@ document.addEventListener('click',async ev=>{
    case'rmpay':od.payments.splice(+b.dataset.i,1);$('pays').innerHTML=paysHtml();odSum();break;
    case'rmaddr':cd.addresses.splice(+b.dataset.i,1);$('c-addr').innerHTML=custAddrHtml();break;
    case'savecustomer':{const{id:cid,...rest}=cd;const ok=await saving2(b,()=>db.collection('customers').doc(cid).set(stamp({...rest,name:rest.name.trim(),contact:(rest.contact||'').trim()})));if(ok){closeSheet();toast('Đã lưu khách')}break}
+   case'lgroup':{const l=od.lines[+b.dataset.i];if(l.group!==k){Object.assign(l,{group:k,pid:'',name:'',price:0,manual:false,pick:false,custom:false})}$('lines').innerHTML=linesHtml();odSum();break}
+   case'lpick':{const l=od.lines[+b.dataset.i],p=P.products[id];Object.assign(l,{pid:id,name:p.name,group:p.group,price:priceAt(p,od.date),manual:false,pick:false,custom:false});$('lines').innerHTML=linesHtml();odSum();break}
+   case'lchange':{const l=od.lines[+b.dataset.i];Object.assign(l,{pid:'',name:'',price:0,pick:false,custom:false,manual:false});$('lines').innerHTML=linesHtml();odSum();break}
+   case'lcustom':{const l=od.lines[+b.dataset.i];l.custom=true;$('lines').innerHTML=linesHtml();$('l'+b.dataset.i+'n')?.focus();break}
+   case'hm':state.homeMode=k;if(k==='pick'&&state.homePick<START)state.homePick=workDay();watchDay(homeDay());render();break;
+   case'mx':exportXlsx([k],'huyen-cake-'+k);break;
    case'addline':od.lines.push({pid:'',name:'',note:'',qty:1,price:0,group:'banh'});$('lines').innerHTML=linesHtml();odSum();break;
    case'rmline':od.lines.splice(+b.dataset.i,1);$('lines').innerHTML=linesHtml();odSum();break;
    case'saveorder':saveOrder(b);break;
@@ -978,11 +1066,7 @@ document.addEventListener('input',ev=>{
     const l=od.lines[+t.dataset.l],f=t.dataset.lf;
     if(f==='qty')l.qty=Number(t.value)||0;
     else if(f==='price'){l.price=val;l.manual=true}
-    else if(f==='pid'){
-      const p=P.products[val];l.pid=val;l.manual=false;
-      if(p){l.name=p.name;l.group=p.group;l.price=priceAt(p,od.date)}else{l.name='';l.price=0;l.group='banh'}
-      $('lines').innerHTML=linesHtml();
-    }else l[f]=val;
+    else l[f]=val;
     odSum();
   }else if(t.dataset.p){
     pd[t.dataset.p]=val;
@@ -993,6 +1077,7 @@ document.addEventListener('input',ev=>{
 });
 document.addEventListener('change',ev=>{
   const t=ev.target;
+  if(t.id==='homePick'&&t.value>=START){state.homePick=t.value;watchDay(t.value);t.blur();render()}
   if(t.id==='dayPick'&&t.value>=START){flushRetail().then(()=>{state.day=t.value;state.ym=ymOf(t.value);focusMonths();t.blur();render()})}
   if(t.dataset.qty){touchRetail(state.day,{items:{[t.dataset.qty]:Math.max(0,Math.floor(Number(t.value)||0))}});setTimeout(render,250)}
 });
@@ -1017,7 +1102,7 @@ function wrapDb(fs){
 function showMsg(html){$('tabs').hidden=true;$('view').innerHTML=html}
 function showLogin(auth,err){
   setSync('off','Chưa đăng nhập');$('who').hidden=true;
-  showMsg(`<div class="login"><h1>Đăng nhập để mở sổ</h1><p class="muted">Dùng đúng tài khoản Google đã được cấp quyền.</p>
+  showMsg(`<div class="login"><img src="icon.svg" alt="" width="84" height="84" style="margin:0 auto;border-radius:20px"><h1>Đăng nhập để mở sổ</h1><p class="muted">Dùng đúng tài khoản Google đã được cấp quyền.</p>
     <button class="btn primary" id="signin">Đăng nhập bằng Google</button>
     ${err?`<p class="err">${esc(err)}</p>`:''}<p class="small muted">Nếu mở link từ Zalo hoặc Facebook mà không đăng nhập được, hãy mở bằng Chrome hoặc Safari.</p></div>`);
   $('signin').onclick=async()=>{
@@ -1051,7 +1136,6 @@ async function start(fs,auth,u){
   }
   if(started)return;started=true;
   uid=u.uid;db=wrapDb(fs);
-  dl={save:async({filename,data})=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);return{status:'saved'}}};
   $('tabs').hidden=false;
   $('who').hidden=false;$('who').innerHTML='<button id="out">Đăng xuất</button>';
   $('out').onclick=()=>{auth.signOut().then(()=>location.reload())};
@@ -1081,7 +1165,15 @@ async function backfill(fs){
     b.set(flag,{done:true});await b.commit();
   }catch(e){}
 }
+let lastDay=workDay();
+function rollDay(){
+  const t=workDay();if(t===lastDay||!db)return;
+  if(state.ym===ymOf(lastDay))state.ym=ymOf(t);
+  if(state.day===lastDay)state.day=t;
+  lastDay=t;focusMonths();watchDay(homeDay());schedule();
+}
 function boot(){
+  setInterval(rollDay,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)rollDay()});
   const h=location.hash.slice(1);if(VIEWS.includes(h))state.view=h;renderTabs();
   if(!window.firebase){setSync('off','Chưa tải được');showMsg('<div class="empty">Chưa tải được trang. Hãy kiểm tra mạng rồi tải lại.</div>');return}
   if(FIREBASE_CONFIG.apiKey==='DIEN_SAU'){setSync('off','Chưa cấu hình');showMsg('<div class="empty">Website chưa được nối với dự án Firebase.</div>');return}
