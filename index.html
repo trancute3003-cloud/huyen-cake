@@ -230,9 +230,10 @@ mark.tnote{display:block;background:var(--warn-soft);color:var(--ink);font-weigh
 .pickgrid{display:flex;flex-direction:column;gap:8px}
 .pickcat{font-size:12.500px;font-weight:700;color:var(--muted);margin-bottom:-3px}
 .picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px}
-.pick{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:6px 9px;text-align:left;display:flex;flex-direction:column;font-size:13.500px;font-weight:600;line-height:1.3;min-height:44px;justify-content:center;overflow-wrap:anywhere}
+.pick{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:6px 8px;text-align:left;display:flex;align-items:center;gap:8px;font-size:13.500px;font-weight:600;line-height:1.3;min-height:44px;justify-content:center;overflow-wrap:anywhere}
 .pick:hover{border-color:var(--accent)}
-.pick small{font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.pick span{min-width:0}
+.pick small{display:block;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
 .pick.other{border-style:dashed;color:var(--accent)}
 .chosen{display:flex;align-items:center;gap:10px;background:var(--sunken);border-radius:10px;padding:8px 10px;font-weight:600;overflow-wrap:anywhere}
 .chosen span{flex:1;min-width:0}
@@ -265,7 +266,7 @@ a.btn.primary{color:var(--on-accent)}
 .mk-sum span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px 9px;font-size:13.500px;font-weight:600;font-variant-numeric:tabular-nums}
 .mk-sec{display:flex;flex-direction:column;gap:6px}
 .mk-head{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap}
-.mk{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 12px;border-top:1px solid var(--line)}
+.mk{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:center;padding:8px 12px;border-top:1px solid var(--line)}
 .mk:first-child{border-top:0}
 .mk.isdone{opacity:.55}
 .mk.isdone .mk-name{text-decoration:line-through}
@@ -276,6 +277,15 @@ a.btn.primary{color:var(--on-accent)}
 .mk-who{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
 .mk-who button{background:none;border:0;padding:0;color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px;font-size:13px;overflow-wrap:anywhere;text-align:left}
 .mk-end{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.th{flex:none;width:46px;height:46px;border-radius:9px;object-fit:cover;display:block;background:var(--sunken)}
+.th.none{display:grid;place-items:center;color:var(--muted);font-weight:700;font-size:16px}
+.th.sm{width:40px;height:40px}
+.imgbox{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.imgbox .big{width:112px;height:112px;border-radius:12px;object-fit:cover;background:var(--sunken);flex:none;display:grid;place-items:center;color:var(--muted);font-size:13px;text-align:center}
+.imgbtns{display:flex;flex-direction:column;gap:6px;flex:1;min-width:150px}
+label.f #s-pos{border:0;padding:0;background:none;min-height:32px;accent-color:var(--accent)}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
 .homebar{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
 .homebar .seg{flex:1 1 320px;min-width:0}
 .homebar .seg button{line-height:1.25}
@@ -418,7 +428,7 @@ const $=id=>document.getElementById(id);
 
 let db=null,uid=null;
 const state={view:'homnay',ym:ymOf(workDay()),day:workDay(),st:'all',q:'',repYear:Number(workDay().slice(0,4)),repMonth:'all',priceTab:'banh',og:'all',rg:'banh',cq:'',homeMode:'today',homeTab:'don',mg:'all',homePick:workDay(),yearReady:false};
-const P={products:{},sources:{},customers:{}};let catalogReady=false;
+const P={products:{},sources:{},customers:{},pimg:{}};let catalogReady=false;
 const M={};const watching={};
 const data=ym=>M[ym]||(M[ym]={orders:{},retail:{},purchases:{},ready:new Set()});
 const isReady=ym=>data(ym).ready.size===KINDS.length;
@@ -503,6 +513,11 @@ function route(){
 }
 const monthSw=()=>{const[y,m]=state.ym.split('-');return`<div class="switch"><button data-act="ym" data-k="-1" aria-label="Tháng trước" ${state.ym<=START_YM?'disabled':''}>‹</button><b class="num">Tháng ${+m}/${y}</b><button data-act="ym" data-k="1" aria-label="Tháng sau">›</button></div>`};
 
+const imgOf=id=>{const d=P.pimg[id]?.data;return typeof d==='string'&&d.startsWith('data:image/jpeg;base64,')?d:''};
+function thumb(id,name,cls=''){
+  const d=imgOf(id);
+  return d?`<img class="th ${cls}" src="${d}" alt="" decoding="sync">`:`<span class="th none ${cls}" aria-hidden="true">${esc((name||'?').trim().charAt(0).toUpperCase())}</span>`;
+}
 const productsSorted=()=>Object.entries(P.products).map(([id,p])=>({id,...p})).sort((a,b)=>(a.o||999)-(b.o||999)||a.name.localeCompare(b.name,'vi'));
 const sourcesSorted=()=>Object.entries(P.sources).map(([id,s])=>({id,...s})).sort((a,b)=>(a.o||999)-(b.o||999)||a.name.localeCompare(b.name,'vi'));
 
@@ -548,7 +563,7 @@ function vMake(list,d){
   cats.sort((a,b)=>a.rank-b.rank);
   const row=x=>{const o=x.o,ym=ymOf(o.date),shipped=o.status==='xong',allMade=(o.lines||[]).every(l=>l.made);
     return`<div class="mk ${x.done?'isdone':''}">
-     <button class="tick" data-act="made" data-id="${x.id}" data-ym="${ym}" data-i="${x.i}" aria-pressed="${x.done}" aria-label="Đã làm ${esc(x.l.name)}" ${shipped?'disabled':''}>${x.done?'✓':''}</button>
+     <button class="tick" data-act="made" data-id="${x.id}" data-ym="${ym}" data-i="${x.i}" aria-pressed="${x.done}" aria-label="Đã làm ${esc(x.l.name)}" ${shipped?'disabled':''}>${x.done?'✓':''}</button>${thumb(x.l.pid,x.l.name,'sm')}
      <div class="mk-main"><span class="mk-name">${x.l.qty>1?x.l.qty+' × ':''}${esc(x.l.name||'Món khác')}</span>${x.l.note?`<mark class="tnote">${esc(x.l.note)}</mark>`:''}${o.note?`<mark class="tnote">${esc(o.note)}</mark>`:''}
       <span class="mk-who"><button data-act="order" data-id="${x.id}" data-ym="${ym}">${esc(o.customer)||'Khách lẻ'}</button>${o.date!==d?' · Quá hẹn '+dm(o.date):''}${o.ship?' · Giao: '+(esc(o.address)||'chưa ghi'):' · Khách lấy'}</span></div>
      <div class="mk-end"><span>${esc(o.time)||wd(o.date)}</span><span class="small muted">${money((x.l.qty||0)*(x.l.price||0))}</span>${!shipped&&allMade?`<button class="btn sm primary" data-act="done" data-id="${x.id}" data-ym="${ym}">Đã giao</button>`:''}</div></div>`};
@@ -664,7 +679,7 @@ function vRetail(){
   <div class="seg">${Object.entries(GROUP).map(([k,l])=>`<button data-act="rg" data-k="${k}" aria-pressed="${g===k}">${l}</button>`).join('')}</div>
   ${!ready?'<div class="empty">Đang tải dữ liệu của ngày này…</div>':''}
   ${ready&&!ps.length?`<div class="empty">Chưa có sản phẩm nhóm ${GROUP[g]}. <a class="linkish" href="#banggia">Thêm trong Bảng giá</a></div>`:''}
-  ${cats.map(c=>`<section><h2>${esc(c.c)}</h2><div class="rows">${c.items.map(p=>{const q=doc.items?.[p.id]||0,pr=priceAt(p,d);return`<div class="row"><div class="grow">${esc(p.name)}<span class="sub num">${money(pr)}${q?' · '+money(q*pr):''}</span></div>
+  ${cats.map(c=>`<section><h2>${esc(c.c)}</h2><div class="rows">${c.items.map(p=>{const q=doc.items?.[p.id]||0,pr=priceAt(p,d);return`<div class="row">${thumb(p.id,p.name)}<div class="grow">${esc(p.name)}<span class="sub num">${money(pr)}${q?' · '+money(q*pr):''}</span></div>
     <div class="stepper"><button data-act="qty" data-id="${p.id}" data-k="-1" id="m-${p.id}" aria-label="Bớt ${esc(p.name)}" ${dis}>−</button><input id="q-${p.id}" data-qty="${p.id}" type="number" inputmode="numeric" min="0" value="${q||''}" placeholder="0" aria-label="Số lượng ${esc(p.name)}" ${dis}><button data-act="qty" data-id="${p.id}" data-k="1" id="p-${p.id}" aria-label="Thêm ${esc(p.name)}" ${dis}>+</button></div></div>`}).join('')}</div></section>`).join('')}
   <section><h2>Bán khác, tự nhập tiền</h2>
     <label class="f">${GROUP[g]}${mi('other-'+g,`data-other="${key}" ${dis}`,doc[key])}</label></section>
@@ -791,7 +806,7 @@ function vPrices(){
   <p class="muted">Bấm vào sản phẩm để đổi giá. Giá mới có hiệu lực từ ngày bạn chọn, các ngày trước vẫn giữ giá cũ.</p>
   ${cats.length?cats.map(g=>`<section><h2>${esc(g.c)}</h2><div class="rows">${g.items.map(p=>{
     const now=priceAt(p,d),list=[...(p.prices||[])].sort((a,b)=>a.from<b.from?-1:1),up=list.find(e=>e.from>d),cur=[...list].reverse().find(e=>e.from<=d)||list[0];
-    return`<button class="row ${p.active===false?'off':''}" data-act="product" data-id="${p.id}"><span class="grow">${esc(p.name)}<span class="sub num">${p.active===false?'Ngừng bán':cur?'Từ '+dmy(cur.from):''}${up?` · ${money(up.price)} từ ${dm(up.from)}`:''}</span></span><span class="amt">${money(now)}</span></button>`}).join('')}</div></section>`).join(''):`<div class="empty">${catalogReady?`Chưa có sản phẩm nhóm ${GROUP[tab]}. <button class="btn primary" data-act="product">Thêm sản phẩm</button>`:'Đang tải bảng giá…'}</div>`}`;
+    return`<button class="row ${p.active===false?'off':''}" data-act="product" data-id="${p.id}">${thumb(p.id,p.name)}<span class="grow">${esc(p.name)}<span class="sub num">${p.active===false?'Ngừng bán':cur?'Từ '+dmy(cur.from):''}${up?` · ${money(up.price)} từ ${dm(up.from)}`:''}</span></span><span class="amt">${money(now)}</span></button>`}).join('')}</div></section>`).join(''):`<div class="empty">${catalogReady?`Chưa có sản phẩm nhóm ${GROUP[tab]}. <button class="btn primary" data-act="product">Thêm sản phẩm</button>`:'Đang tải bảng giá…'}</div>`}`;
 }
 
 /* sheet */
@@ -818,7 +833,7 @@ const NOTE_LABEL={banh:['Chữ trên bánh, yêu cầu riêng','Ví dụ: Mừng
 function pickerHtml(l,i){
   const list=productsSorted().filter(p=>p.active!==false&&(p.group||'banh')===l.group),cats=[];
   for(const p of list){const c=p.cat||GROUP[p.group];let x=cats.find(y=>y.c===c);if(!x)cats.push(x={c,items:[]});x.items.push(p)}
-  return`<div class="pickgrid">${cats.map(c=>`${cats.length>1?`<div class="pickcat">${esc(c.c)}</div>`:''}<div class="picks">${c.items.map(p=>`<button class="pick" data-act="lpick" data-i="${i}" data-id="${p.id}">${esc(p.name)}<small>${money(priceAt(p,od.date))}</small></button>`).join('')}</div>`).join('')}
+  return`<div class="pickgrid">${cats.map(c=>`${cats.length>1?`<div class="pickcat">${esc(c.c)}</div>`:''}<div class="picks">${c.items.map(p=>`<button class="pick" data-act="lpick" data-i="${i}" data-id="${p.id}">${thumb(p.id,p.name,'sm')}<span>${esc(p.name)}<small>${money(priceAt(p,od.date))}</small></span></button>`).join('')}</div>`).join('')}
    <div class="picks"><button class="pick other" data-act="lcustom" data-i="${i}">Món khác, tự ghi</button></div></div>`;
 }
 function linesHtml(){
@@ -827,7 +842,7 @@ function linesHtml(){
     const custom=l.custom||(!l.pid&&l.name),picked=l.pid&&!l.pick,[nl,np]=NOTE_LABEL[g];
     return`<div class="lineitem">
     <div class="seg">${Object.entries(GROUP).map(([k,v])=>`<button data-act="lgroup" data-i="${i}" data-k="${k}" aria-pressed="${g===k}">${v}</button>`).join('')}</div>
-    ${picked?`<div class="chosen"><span>${esc(l.name)}</span><button class="btn sm" data-act="lchange" data-i="${i}">Đổi món</button></div>`:custom?`<label class="f">Tên món<input id="l${i}n" data-l="${i}" data-lf="name" value="${esc(l.name)}"></label><button class="linkish" data-act="lchange" data-i="${i}">Chọn từ danh sách ${GROUP[g].toLowerCase()}</button>`:pickerHtml(l,i)}
+    ${picked?`<div class="chosen">${thumb(l.pid,l.name,'sm')}<span>${esc(l.name)}</span><button class="btn sm" data-act="lchange" data-i="${i}">Đổi món</button></div>`:custom?`<label class="f">Tên món<input id="l${i}n" data-l="${i}" data-lf="name" value="${esc(l.name)}"></label><button class="linkish" data-act="lchange" data-i="${i}">Chọn từ danh sách ${GROUP[g].toLowerCase()}</button>`:pickerHtml(l,i)}
     ${picked||custom?`<label class="f">${nl}<input id="l${i}d" data-l="${i}" data-lf="note" value="${esc(l.note)}" placeholder="${np}"></label>
     <div class="li3"><label class="f">Số lượng<input id="l${i}q" data-l="${i}" data-lf="qty" type="number" min="1" inputmode="numeric" value="${l.qty}"></label>
       <label class="f">Đơn giá${mi(`l${i}r`,`data-l="${i}" data-lf="price"`,l.price)}</label>
@@ -955,7 +970,30 @@ async function savePurchase(btn){
 }
 
 /* sản phẩm */
-let sd=null;
+let sd=null,imgD=null;
+function imgBoxHtml(){
+  const src=imgD.del?'':imgD.data||(sd.id?imgOf(sd.id):'');
+  return`${src?`<img class="big" id="s-prev" src="${src}" alt="Ảnh sản phẩm">`:'<div class="big">Chưa có ảnh</div>'}
+   <div class="imgbtns"><span class="btn filebtn">${src?'Đổi ảnh':'Chọn ảnh'}<input id="s-file" type="file" accept="image/*" aria-label="Chọn ảnh sản phẩm"></span>
+   ${src?'<button class="btn danger" data-act="rmimg">Xóa ảnh</button>':''}</div>
+   ${imgD.src&&imgD.src.naturalWidth!==imgD.src.naturalHeight?`<label class="f" style="width:100%">Chỉnh vị trí khung vuông<input id="s-pos" type="range" min="0" max="100" value="${Math.round(imgD.pos*100)}"></label>`:''}`;
+}
+function cropSquare(img,pos){
+  const w=img.naturalWidth,h=img.naturalHeight,sz=Math.min(w,h),c=document.createElement('canvas');
+  c.width=c.height=300;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,300,300);
+  x.drawImage(img,(w-sz)*pos,(h-sz)*pos,sz,sz,0,0,300,300);
+  return c.toDataURL('image/jpeg',.8);
+}
+async function pickImage(file){
+  if(!file)return;
+  const url=URL.createObjectURL(file),img=new Image();
+  try{
+    img.src=url;await img.decode();
+    imgD={src:img,pos:.5,del:false,data:cropSquare(img,.5)};
+    $('s-imgbox').innerHTML=imgBoxHtml();sheetErr('');
+  }catch(e){sheetErr('Không đọc được ảnh này. Hãy chọn ảnh JPG hoặc PNG.')}
+  finally{URL.revokeObjectURL(url)}
+}
 function pricesHtml(){
   const list=[...sd.prices].sort((a,b)=>a.from<b.from?1:-1);
   return list.map(e=>`<div class="row"><span class="grow num">Từ ${dmy(e.from)}</span><span class="amt">${money(e.price)}</span>${list.length>1?`<button class="btn sm" data-act="rmprice" data-k="${e.from}" aria-label="Bỏ mốc giá ${dmy(e.from)}">Bỏ</button>`:''}</div>`).join('')||'<div class="row muted">Chưa có giá</div>';
@@ -963,11 +1001,13 @@ function pricesHtml(){
 function openProduct(id){
   const ex=id?P.products[id]:null;
   sd=ex?{...ex,id,prices:(ex.prices||[]).map(x=>({...x}))}:{id:null,name:'',cat:'',group:state.priceTab==='ng'?'banh':state.priceTab,active:true,prices:[],o:900};
+  imgD={src:null,pos:.5,del:false,data:''};
   const cats=[...new Set(productsSorted().map(p=>p.cat).filter(Boolean))];
   const newP=`<div class="grid2"><label class="f">${id?'Giá mới':'Giá bán'}${mi('n-price','',0)}</label>
     <label class="f">Áp dụng từ ngày<input id="n-from" type="date" min="${START}" value="${workDay()}"></label></div>
     ${id?'<button class="btn" data-act="addprice">Thêm mốc giá này</button>':''}`;
   openSheet(id?'Sửa sản phẩm':'Thêm sản phẩm',`
+   <section><h2>Ảnh sản phẩm</h2><div class="imgbox" id="s-imgbox">${imgBoxHtml()}</div></section>
    <label class="f">Tên sản phẩm<input id="s-name" data-s="name" value="${esc(sd.name)}"></label>
    <div class="grid2"><label class="f">Nhóm hiển thị<input id="s-cat" data-s="cat" list="catlist" value="${esc(sd.cat)}" placeholder="Ví dụ: Hoa bó"></label>
     <label class="f">Tính doanh thu vào<select id="s-group" data-s="group">${Object.entries(GROUP).map(([k,v])=>`<option value="${k}" ${sd.group===k?'selected':''}>${v}</option>`).join('')}</select></label></div>
@@ -988,7 +1028,11 @@ async function saveProduct(btn){
   if(takePrice()===null)return;
   if(!sd.prices.length)return sheetErr('Hãy nhập giá bán.');
   const{id,...rest}=sd,col=db.collection('products'),ref=id?col.doc(id):col.doc();
-  const ok=await saving2(btn,()=>ref.set(stamp({...rest,name:rest.name.trim(),cat:(rest.cat||'').trim()||GROUP[rest.group]})));
+  const ok=await saving2(btn,async()=>{
+    await ref.set(stamp({...rest,name:rest.name.trim(),cat:(rest.cat||'').trim()||GROUP[rest.group]}));
+    if(imgD.data)await db.collection('pimg').doc(ref.id).set(stamp({data:imgD.data}));
+    else if(imgD.del&&id)await db.collection('pimg').doc(id).delete();
+  });
   if(!ok)return;closeSheet();toast('Đã lưu '+sd.name.trim());
 }
 
@@ -1141,6 +1185,7 @@ document.addEventListener('click',async ev=>{
    case'savepurchase':savePurchase(b);break;
    case'saveproduct':saveProduct(b);break;
    case'savesource':saveSource(b);break;
+   case'rmimg':imgD={src:null,pos:.5,del:true,data:''};$('s-imgbox').innerHTML=imgBoxHtml();break;
    case'addprice':{const r=takePrice();if(r===false)sheetErr('Hãy nhập giá mới.');else if(r){$('plist').innerHTML=pricesHtml();sheetErr('')}break}
    case'rmprice':sd.prices=sd.prices.filter(e=>e.from!==k);$('plist').innerHTML=pricesHtml();break;
    case'arm':{
@@ -1153,6 +1198,7 @@ document.addEventListener('input',ev=>{
   const t=ev.target;
   if(t.hasAttribute('data-money')){t.value=fmtInput(parseMoney(t.value))}
   if(t.id==='q'){state.q=t.value;$('olist').innerHTML=orderListHtml();return}
+  if(t.id==='s-pos'){imgD.pos=+t.value/100;imgD.data=cropSquare(imgD.src,imgD.pos);$('s-prev').src=imgD.data;return}
   if(t.id==='cq'){state.cq=t.value;$('clist').innerHTML=customerRows();return}
   if(t.dataset.other){
     touchRetail(state.day,{[t.dataset.other]:parseMoney(t.value)});
@@ -1183,6 +1229,7 @@ document.addEventListener('input',ev=>{
 });
 document.addEventListener('change',ev=>{
   const t=ev.target;
+  if(t.id==='s-file'){pickImage(t.files[0]);t.value=''}
   if(t.id==='homePick'&&t.value>=START){state.homePick=t.value;watchDay(t.value);t.blur();render()}
   if(t.id==='dayPick'&&t.value>=START){flushRetail().then(()=>{state.day=t.value;state.ym=ymOf(t.value);focusMonths();t.blur();render()})}
   if(t.dataset.qty){touchRetail(state.day,{items:{[t.dataset.qty]:Math.max(0,Math.floor(Number(t.value)||0))}});setTimeout(render,250)}
@@ -1250,7 +1297,7 @@ async function start(fs,auth,u){
     if(!s.metadata.fromCache)flag();noteLoaded();schedule();
   },()=>setSync('off','Mất kết nối, hãy tải lại trang'));
   let a=false,b=false;const both=()=>{if(a&&b)catalogReady=true};
-  cat('products',()=>{a=true;both()});cat('sources',()=>{b=true;both()});cat('customers',()=>{});
+  cat('products',()=>{a=true;both()});cat('sources',()=>{b=true;both()});cat('customers',()=>{});cat('pimg',()=>{});
   backfill(fs);
   focusMonths();armLoadTimer();render();
   if(state.view==='baocao')loadYear();
