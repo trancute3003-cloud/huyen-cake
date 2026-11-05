@@ -71,7 +71,7 @@ button{cursor:pointer}
 .tabs svg{width:18px;height:18px;flex:none}
 @media (max-width:759px){
   .tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding:4px max(4px,env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px));color:var(--muted)}
-  .tabs a{flex-direction:column;gap:1px;font-size:11px;padding:5px 0;min-width:0}
+  .tabs a{flex-direction:column;gap:1px;font-size:10.5px;padding:5px 0;min-width:0}
   .tabs svg{width:21px;height:21px}
   .tabs a[aria-current="page"]{background:var(--sunken)}
   main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}
@@ -118,18 +118,25 @@ label.f textarea{min-height:70px;resize:vertical}
 @media (max-width:520px){.stats{grid-template-columns:1fr 1fr}.stats .stat.wide{grid-column:1/-1}.stats .stat.hero{grid-column:1/-1;order:-1}}
 
 /* tickets */
-.list{display:flex;flex-direction:column;gap:8px}
-.ticket{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:grid;grid-template-columns:62px 1fr;overflow:hidden}
-.ticket .when{background:var(--sunken);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 2px;border-right:1px dashed var(--line);text-align:center}
-.ticket .when b{font-size:16px;font-variant-numeric:tabular-nums;line-height:1.2}
-.ticket .when span{font-size:11.5px;color:var(--muted)}
-.ticket .body{padding:10px 12px;min-width:0;display:flex;flex-direction:column;gap:5px}
-.ticket.done{opacity:.72}
+.list{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.list>.day-h{grid-column:1/-1}
+@media (min-width:760px){.list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ticket{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.t-top{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;padding:7px 12px;background:var(--sunken);border-bottom:1px dashed var(--line)}
+.t-when{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.t-when small{font-weight:500;color:var(--muted);font-size:12.5px;margin-left:4px}
+.t-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
+.ticket.done .t-body{opacity:.72}
 .tline{display:flex;gap:8px;justify-content:space-between;align-items:baseline}
-.tname{font-weight:600;background:none;border:0;padding:0;text-align:left;overflow-wrap:anywhere}
+.tname{font-weight:700;font-size:15.5px;background:none;border:0;padding:0;text-align:left;overflow-wrap:anywhere}
 .tname:hover{color:var(--accent)}
 .tdesc{font-size:13.5px;color:var(--muted);overflow-wrap:anywhere}
-.tact{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.t-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.t-item{display:flex;gap:10px;align-items:center;min-width:0}
+.t-item>div{min-width:0;display:flex;flex-direction:column;gap:3px;align-items:flex-start;font-size:14.5px;font-weight:500;overflow-wrap:anywhere}
+.th.lg{width:60px;height:60px;border-radius:10px;font-size:20px}
+.tact{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:auto}
+.tact .grow{flex:1;min-width:120px}
 .pill{display:inline-flex;align-items:center;border-radius:99px;padding:2px 9px;font-size:12px;font-weight:600;white-space:nowrap}
 .pill.moi{background:var(--warn-soft);color:var(--warn)}
 .pill.dang{background:var(--info-soft);color:var(--info)}
@@ -211,7 +218,7 @@ dialog::backdrop{background:rgba(30,10,22,.55)}
 .stat small{display:block;font-size:12.5px;color:var(--muted);line-height:1.35;font-weight:500;font-variant-numeric:tabular-nums}
 .stat.hero small{color:inherit;opacity:.9}
 .tl{display:flex;flex-direction:column;gap:3px;align-items:flex-start;font-size:14.5px;overflow-wrap:anywhere}
-mark.tnote{display:block;background:var(--warn-soft);color:var(--ink);font-weight:700;font-size:15px;line-height:1.35;border-radius:6px;padding:3px 9px;overflow-wrap:anywhere;max-width:100%}
+mark.tnote{display:block;width:fit-content;background:var(--warn-soft);color:var(--ink);font-weight:700;font-size:15px;line-height:1.35;border-radius:6px;padding:3px 9px;overflow-wrap:anywhere;max-width:100%}
 .mi{position:relative;display:block}
 .mi input{padding-right:30px!important}
 .mi i{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:600;color:var(--muted);pointer-events:none}
@@ -286,6 +293,11 @@ a.btn.primary{color:var(--on-accent)}
 label.f #s-pos{border:0;padding:0;background:none;min-height:32px;accent-color:var(--accent)}
 .filebtn{position:relative;overflow:hidden}
 .filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+.pill.debt{background:var(--bad-soft);color:var(--bad)}
+.debt-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.debt-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:9px 12px;background:var(--sunken);font-weight:700;flex-wrap:wrap}
+.debt-head small{font-weight:500;color:var(--muted);margin-left:6px}
+.debt-head b{color:var(--bad);font-variant-numeric:tabular-nums}
 .homebar{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
 .homebar .seg{flex:1 1 320px;min-width:0}
 .homebar .seg button{line-height:1.25}
@@ -340,6 +352,7 @@ function paysOf(o){
 }
 const orderPaid=o=>paysOf(o).reduce((s,p)=>s+(p.amount||0),0);
 const orderLeft=o=>Math.max(0,orderTotal(o)-orderPaid(o));
+const purchaseLeft=e=>e.credit?Math.max(0,(e.amount||0)-(e.pays||[]).reduce((s,p)=>s+(p.amount||0),0)):0;
 function retailTotal(doc,products,date){
   let t=(doc?.otherBanh||0)+(doc?.otherHoa||0)+(doc?.otherCombo||0);
   for(const[pid,q]of Object.entries(doc?.items||{}))t+=(q||0)*priceAt(products[pid],date);
@@ -409,9 +422,10 @@ const ICON={
  don:'<path d="M7 3h10a1 1 0 0 1 1 1v17l-3-2-3 2-3-2-3 2V4a1 1 0 0 1 1-1z"/><path d="M9 8h6M9 12h6"/>',
  banle:'<path d="M4 15h16v5H4z"/><path d="M6 15v-4h12v4"/><path d="M12 11V7"/><path d="M12 3.5c1 1 1 2 0 3-1-1-1-2 0-3z"/>',
  nhap:'<path d="M3 8l9-5 9 5v9l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v9"/>',
+ sono:'<path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h12M9 8h6M9 12h4"/>',
  baocao:'<path d="M5 20V11M12 20V5M19 20v-6"/>',
  banggia:'<path d="M12 3h8v8l-9 10-9-9z"/><circle cx="16" cy="7" r="1.3"/>'};
-const TABS=[['homnay','Hôm nay'],['don','Đơn đặt'],['banle','Bán lẻ'],['nhap','Nhập hàng'],['baocao','Báo cáo'],['banggia','Bảng giá']];
+const TABS=[['homnay','Hôm nay'],['don','Đơn đặt'],['banle','Bán lẻ'],['nhap','Nhập hàng'],['sono','Sổ nợ'],['baocao','Báo cáo'],['banggia','Bảng giá']];
 const STATUS={moi:'Chưa làm',dang:'Đang làm',xong:'Đã giao',huy:'Đã hủy'};
 const GROUP={banh:'Bánh',hoa:'Hoa',combo:'Combo'};
 const COST={banh:'Nguyên liệu bánh',hoa:'Nhập hoa',combo:'Nhập cho combo',chung:'Chi chung'};
@@ -427,7 +441,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const $=id=>document.getElementById(id);
 
 let db=null,uid=null;
-const state={view:'homnay',ym:ymOf(workDay()),day:workDay(),st:'all',q:'',repYear:Number(workDay().slice(0,4)),repMonth:'all',priceTab:'banh',og:'all',rg:'banh',cq:'',homeMode:'today',homeTab:'don',mg:'all',homePick:workDay(),yearReady:false};
+const state={view:'homnay',ym:ymOf(workDay()),day:workDay(),st:'all',q:'',repYear:Number(workDay().slice(0,4)),repMonth:'all',priceTab:'banh',og:'all',rg:'banh',cq:'',homeMode:'today',homeTab:'don',mg:'all',homePick:workDay(),yearReady:false,debtReady:false,debtYms:[]};
 const P={products:{},sources:{},customers:{},pimg:{}};let catalogReady=false;
 const M={};const watching={};
 const data=ym=>M[ym]||(M[ym]={orders:{},retail:{},purchases:{},ready:new Set()});
@@ -471,7 +485,7 @@ function typing(){const a=document.activeElement;return a&&$('view').contains(a)
 function render(){
   if(typing()){deferred=true;return}
   const fid=document.activeElement?.id;
-  $('view').innerHTML=({trangchu:vLanding,homnay:vHome,don:vOrders,khach:vCustomers,banle:vRetail,nhap:vPurchases,baocao:vReport,banggia:vPrices}[state.view])();
+  $('view').innerHTML=({sono:vDebts,trangchu:vLanding,homnay:vHome,don:vOrders,khach:vCustomers,banle:vRetail,nhap:vPurchases,baocao:vReport,banggia:vPrices}[state.view])();
   if(state.view==='baocao')bindChart();
   if(fid&&$(fid)&&$('view').contains($(fid)))$(fid).focus({preventScroll:true});
   if($('sheet').open&&sheetOnData)sheetOnData();
@@ -510,6 +524,7 @@ function route(){
   if(!db&&authRef&&state.view!=='trangchu')return showLogin(authRef);
   $('tabs').hidden=!db;render();window.scrollTo(0,0);
   if(state.view==='baocao'&&db)loadYear();
+  if(state.view==='sono'&&db)loadDebts();
 }
 const monthSw=()=>{const[y,m]=state.ym.split('-');return`<div class="switch"><button data-act="ym" data-k="-1" aria-label="Tháng trước" ${state.ym<=START_YM?'disabled':''}>‹</button><b class="num">Tháng ${+m}/${y}</b><button data-act="ym" data-k="1" aria-label="Tháng sau">›</button></div>`};
 
@@ -523,22 +538,21 @@ const sourcesSorted=()=>Object.entries(P.sources).map(([id,s])=>({id,...s})).sor
 
 function ticket(id,o){
   const t=orderTotal(o),left=orderLeft(o),paid=orderPaid(o),ym=ymOf(o.date),late=o.date<realToday()&&(o.status==='moi'||o.status==='dang');
-  const lines=(o.lines||[]).map(l=>`<div class="tl"><span>${l.qty>1?l.qty+' × ':''}${esc(l.name||'Món khác')}</span>${l.note?`<mark class="tnote">${esc(l.note)}</mark>`:''}</div>`).join('');
+  const lines=(o.lines||[]).map(l=>`<div class="t-item">${thumb(l.pid,l.name,'lg')}<div><span>${l.qty>1?l.qty+' × ':''}${esc(l.name||'Món khác')}</span>${l.note?`<mark class="tnote">${esc(l.note)}</mark>`:''}</div></div>`).join('');
   const ln=(o.lines||[]).length,lm=(o.lines||[]).filter(l=>l.made).length,open=o.status==='moi'||o.status==='dang',ready=open&&ln>0&&lm===ln;
   const how=[...new Set(paysOf(o).map(p=>p.method).filter(Boolean))].map(m=>METHOD[m]).join(' + ');
-  return`<article class="ticket ${o.status==='xong'||o.status==='huy'?'done':''}">
-   <div class="when"><b>${esc(o.time)||dm(o.date)}</b><span>${o.time?dm(o.date):wd(o.date)}</span></div>
-   <div class="body">
-    <div class="tline"><button class="tname" data-act="order" data-id="${id}" data-ym="${ym}">${esc(o.customer)||'Khách lẻ'}</button><span class="num" style="font-weight:600">${money(t)}</span></div>
-    ${lines||'<div class="tdesc">Chưa ghi món</div>'}
+  return`<article class="ticket ${closed(o)?'done':''}">
+   <div class="t-top"><span class="pill ${late?'late':ready?'ready':o.status}">${late?'Quá hẹn':ready?'Làm xong, chờ giao':STATUS[o.status]}</span>${o.status==='xong'&&left>0?'<span class="pill debt">Đang nợ</span>':''}${open&&lm&&!ready?`<span class="small muted num">Đã làm ${lm}/${ln}</span>`:''}
+    <span class="t-when">${esc(o.time)||wd(o.date)}<small>${dm(o.date)}</small></span></div>
+   <div class="t-body">
+    <div class="tline"><button class="tname" data-act="order" data-id="${id}" data-ym="${ym}">${esc(o.customer)||'Khách lẻ'}</button><span class="num" style="font-weight:700">${money(t)}</span></div>
+    ${lines?`<div class="t-items">${lines}</div>`:'<div class="tdesc">Chưa ghi món</div>'}
     <div class="tdesc">${o.ship?'Giao: '+(esc(o.address)||'chưa ghi địa chỉ'):'Khách lấy'}${o.contact?' · '+esc(o.contact):''}</div>
     ${o.note?`<mark class="tnote">${esc(o.note)}</mark>`:''}
-    <div class="tact"><span class="pill ${late?'late':ready?'ready':o.status}">${late?'Quá hẹn':ready?'Làm xong, chờ giao':STATUS[o.status]}</span>${open&&lm&&!ready?`<span class="small muted num">Đã làm ${lm}/${ln}</span>`:''}
-     ${o.status==='huy'?'':left>0?`<span class="small muted num">${paid?`Đã nhận ${money(paid)} · `:''}Còn thu ${money(left)}</span>`:`<span class="small muted">Đã thu đủ${how?' · '+how:''}</span>`}
-     <span style="flex:1"></span>
+    <div class="tact"><span class="grow small muted num">${o.status==='huy'?'':left>0?`${paid?`Đã nhận ${money(paid)} · `:''}Còn thu ${money(left)}`:`Đã thu đủ${how?' · '+how:''}`}</span>
      <button class="btn sm danger" data-act="armdel" data-kind="orders" data-id="${id}" data-ym="${ym}">Xóa</button>
-     ${o.status==='huy'||left<=0?'':`<button class="btn sm" data-act="pay" data-id="${id}" data-ym="${ym}">Thu đủ</button>`}
-     ${o.status==='xong'||o.status==='huy'?'':`<button class="btn sm primary" data-act="done" data-id="${id}" data-ym="${ym}">Đã giao</button>`}
+     ${o.status==='huy'||left<=0?'':`<button class="btn sm" data-act="pay" data-kind="orders" data-id="${id}" data-ym="${ym}">Thu tiền</button>`}
+     ${closed(o)?'':`<button class="btn sm primary" data-act="done" data-id="${id}" data-ym="${ym}">Đã giao</button>`}
     </div>
    </div></article>`;
 }
@@ -696,7 +710,7 @@ function vPurchases(){
   for(const[id,e]of rows){
     if(e.date!==d){if(d)list+='</div>';d=e.date;list+=`<div class="day-h num">${wd(d)}, ${dm(d)}</div><div class="rows">`}
     const src=P.sources[e.sourceId];
-    list+=`<div class="row"><button class="rowmain" data-act="purchase" data-id="${id}" data-ym="${state.ym}"><span class="grow">${esc(src?.name||'Nguồn đã xóa')}<span class="sub">${COST[src?.group]||'Chi chung'}${e.note?' · '+esc(e.note):''}</span></span><span class="amt">${money(e.amount)}</span></button><button class="btn sm danger" data-act="armdel" data-kind="purchases" data-id="${id}" data-ym="${state.ym}">Xóa</button></div>`;
+    list+=`<div class="row"><button class="rowmain" data-act="purchase" data-id="${id}" data-ym="${state.ym}"><span class="grow">${esc(src?.name||'Nguồn đã xóa')}<span class="sub">${COST[src?.group]||'Chi chung'}${e.note?' · '+esc(e.note):''}${purchaseLeft(e)?` · Còn nợ ${money(purchaseLeft(e))}`:''}</span></span><span class="amt">${money(e.amount)}</span></button><button class="btn sm danger" data-act="armdel" data-kind="purchases" data-id="${id}" data-ym="${state.ym}">Xóa</button></div>`;
   }
   if(d)list+='</div>';
   const top=Object.entries(s.bySource).sort((a,b)=>b[1]-a[1]);
@@ -708,6 +722,47 @@ function vPurchases(){
   ${rows.length?`<div class="two"><section style="gap:6px"><h2>Từng lần nhập</h2>${list}</section>
    <section><h2>Theo nguồn</h2><div class="rows">${top.map(([n,v])=>`<div class="row"><span class="grow">${esc(n)}</span><span class="amt">${money(v)}</span></div>`).join('')}</div></section></div>`
    :`<div class="empty">${isReady(state.ym)?'Tháng này chưa có khoản nhập nào.':'Đang tải…'}${!isReady(state.ym)?'':' <button class="btn primary" data-act="purchase">Ghi khoản đầu tiên</button>'}</div>`}`;
+}
+
+/* Sổ nợ: đọc đơn và khoản nhập của mọi tháng đã dùng, giữ 10 phút */
+const fetchedD={};
+async function loadDebts(){
+  state.debtReady=false;schedule();
+  const yms=[];for(let ym=START_YM,end=shiftYm(ymOf(workDay()),1);ym<=end;ym=shiftYm(ym,1))yms.push(ym);
+  try{
+    const need=yms.filter(ym=>!watching[ym]&&Date.now()-(fetched[ym]||0)>600000&&Date.now()-(fetchedD[ym]||0)>600000);
+    await Promise.all(need.flatMap(ym=>['orders','purchases'].map(async k=>{
+      const snap=await db.collection('m/'+ym+'/'+k).get();
+      data(ym)[k]=Object.fromEntries(snap.docs.map(x=>[x.id,x.data()]));
+    })));
+    for(const ym of need)fetchedD[ym]=Date.now();
+    state.debtYms=yms;state.debtReady=true;schedule();
+  }catch(e){toast('Chưa tải được Sổ nợ. Hãy mở lại mục này.')}
+}
+function vDebts(){
+  const head=`<div class="head"><h1>Sổ nợ</h1><button class="btn primary" data-act="purchase" data-credit="1">Ghi nợ nhập hàng</button></div>`;
+  if(!state.debtReady)return head+'<div class="empty">Đang tải sổ nợ…</div>';
+  const cust={},sup={};let inT=0,outT=0;
+  for(const ym of state.debtYms){
+    for(const[id,o]of Object.entries(data(ym).orders)){
+      if(o.status!=='xong'||orderLeft(o)<=0)continue;
+      const k=o.customerId||normName(o.customer)||'khach-le',left=orderLeft(o),c=cust[k]||(cust[k]={name:o.customer||'Khách lẻ',contact:o.contact||'',sum:0,rows:[]});
+      c.sum+=left;inT+=left;c.rows.push({id,ym,o,left});
+    }
+    for(const[id,e]of Object.entries(data(ym).purchases)){
+      const left=purchaseLeft(e);if(left<=0)continue;
+      const c=sup[e.sourceId]||(sup[e.sourceId]={name:P.sources[e.sourceId]?.name||'Nguồn đã xóa',sum:0,rows:[]});
+      c.sum+=left;outT+=left;c.rows.push({id,ym,e,left});
+    }
+  }
+  const byD=(a,b)=>(a.o||a.e).date<(b.o||b.e).date?-1:1;
+  const cards=Object.values(cust).sort((a,b)=>b.sum-a.sum).map(c=>`<div class="debt-card"><div class="debt-head"><span>${esc(c.name)}${c.contact?`<small>${esc(c.contact)}</small>`:''}</span><b>${money(c.sum)}</b></div>
+    ${c.rows.sort(byD).map(x=>`<div class="row"><button class="rowmain" data-act="order" data-id="${x.id}" data-ym="${x.ym}"><span class="grow"><span class="num">Giao ${dm(x.o.date)}</span><span class="sub">${(x.o.lines||[]).map(l=>esc(l.name)).join(', ')}</span></span><span class="amt">${money(x.left)}</span></button><button class="btn sm primary" data-act="pay" data-kind="orders" data-id="${x.id}" data-ym="${x.ym}">Thu tiền</button></div>`).join('')}</div>`).join('');
+  const sups=Object.values(sup).sort((a,b)=>b.sum-a.sum).map(c=>`<div class="debt-card"><div class="debt-head"><span>${esc(c.name)}</span><b>${money(c.sum)}</b></div>
+    ${c.rows.sort(byD).map(x=>`<div class="row"><button class="rowmain" data-act="purchase" data-id="${x.id}" data-ym="${x.ym}"><span class="grow"><span class="num">Nhập ${dm(x.e.date)}</span><span class="sub">${x.e.note?esc(x.e.note)+' · ':''}Tổng ${money(x.e.amount)}</span></span><span class="amt">${money(x.left)}</span></button><button class="btn sm primary" data-act="pay" data-kind="purchases" data-id="${x.id}" data-ym="${x.ym}">Trả tiền</button></div>`).join('')}</div>`).join('');
+  return head+`<div class="stats" style="grid-template-columns:1fr 1fr"><div class="stat"><span>Khách nợ tiệm</span><b>${money(inT)}</b></div><div class="stat"><span>Tiệm nợ nhà cung cấp</span><b>${money(outT)}</b></div></div>
+  <div class="two"><section><h2>Khách nợ tiệm</h2>${cards||'<div class="empty">Không có khách nào đang nợ.</div>'}<p class="hint">Đơn tự vào đây khi đã bấm Đã giao mà chưa thu đủ tiền.</p></section>
+  <section><h2>Tiệm nợ nhà cung cấp</h2>${sups||'<div class="empty">Tiệm không còn nợ khoản nhập nào.</div>'}<p class="hint">Khoản nhập chưa trả vẫn được tính vào tiền nhập của ngày nhập.</p></section></div>`;
 }
 
 /* báo cáo: giữ số đã tải 10 phút để không tốn lượt đọc miễn phí */
@@ -898,10 +953,12 @@ function openOrder(id,ym){
    `<div class="sum" id="o-sum"></div>${id?delBtn('delorder'):''}<button class="btn primary" data-act="saveorder">Lưu đơn</button>`,
    ()=>{odSum();custSug();addrChips()});
 }
-function openPay(id,ym){
-  const o=data(ym).orders[id];if(!o)return;
-  payT={id,ym};
-  openSheet('Thu đủ tiền đơn',`<p>${esc(o.customer)||'Khách lẻ'}: còn thu <b class="num">${money(orderLeft(o))}</b>. Khách trả bằng gì?</p>
+function openPay(kind,id,ym){
+  const e=data(ym)[kind][id];if(!e)return;
+  const isO=kind==='orders',left=isO?orderLeft(e):purchaseLeft(e);
+  payT={kind,id,ym,left};
+  openSheet(isO?'Thu tiền đơn':'Trả tiền nhập hàng',`<p>${esc(isO?e.customer||'Khách lẻ':P.sources[e.sourceId]?.name||'Nguồn đã xóa')}: ${isO?'còn thu':'còn nợ'} <b class="num">${money(left)}</b></p>
+   <label class="f">Số tiền lần này${mi('pay-amt','',left)}</label>
    <button class="btn primary paybtn" data-act="payby" data-k="tm">Tiền mặt</button><button class="btn paybtn" data-act="payby" data-k="ck">Chuyển khoản</button>`,'<span class="sum"></span>');
 }
 async function saveOrder(btn){
@@ -938,10 +995,10 @@ function openCustomer(id){
 
 /* nhập hàng */
 let pd=null;
-function openPurchase(id,ym){
+function openPurchase(id,ym,credit){
   const ex=id?data(ym).purchases[id]:null;
   const active=sourcesSorted().filter(s=>s.active!==false||s.id===ex?.sourceId);
-  pd=ex?{...ex,id,oldYm:ym,newSrc:false}:{id:null,date:state.view==='nhap'&&ymOf(workDay())!==state.ym?state.ym+'-01':workDay(),sourceId:'',amount:0,note:'',newSrc:false,srcName:'',srcGroup:'banh'};
+  pd=ex?{...ex,id,oldYm:ym,newSrc:false}:{id:null,date:state.view==='nhap'&&ymOf(workDay())!==state.ym?state.ym+'-01':workDay(),sourceId:'',amount:0,note:'',credit:!!credit,pays:[],newSrc:false,srcName:'',srcGroup:'banh'};
   const opts=Object.keys(COST).map(g=>{const l=active.filter(s=>s.group===g);return l.length?`<optgroup label="${COST[g]}">${l.map(s=>`<option value="${s.id}" ${s.id===pd.sourceId?'selected':''}>${esc(s.name)}</option>`).join('')}</optgroup>`:''}).join('');
   openSheet(id?'Sửa khoản nhập':'Thêm khoản nhập',`
    <div class="grid2"><label class="f">Ngày nhập<input id="b-date" data-p="date" type="date" min="${START}" value="${pd.date}"></label>
@@ -949,7 +1006,8 @@ function openPurchase(id,ym){
    <label class="f">Nguồn nhập<select id="b-src" data-p="sourceId"><option value="">Chọn nguồn</option>${opts}<option value="__new">+ Thêm nguồn mới</option></select></label>
    <div id="newsrc" class="grid2" hidden><label class="f">Tên nguồn mới<input id="b-sn" data-p="srcName" placeholder="Ví dụ: Mứt dâu"></label>
     <label class="f">Thuộc nhóm<select id="b-sg" data-p="srcGroup">${Object.entries(COST).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label></div>
-   <label class="f">Ghi chú<input id="b-note" data-p="note" value="${esc(pd.note)}" placeholder="Số lượng, món đã mua"></label>`,
+   <label class="f">Ghi chú<input id="b-note" data-p="note" value="${esc(pd.note)}" placeholder="Số lượng, món đã mua"></label>
+   <section><h2>Thanh toán cho nơi nhập</h2><div class="seg" id="creditseg"><button data-act="credit" data-k="0" aria-pressed="${!pd.credit}">Đã trả đủ</button><button data-act="credit" data-k="1" aria-pressed="${!!pd.credit}">Chưa trả, ghi nợ</button></div><p class="hint">Chọn ghi nợ thì khoản này tự vào Sổ nợ. Trả dần ở mục Sổ nợ.</p></section>`,
    `<span class="sum"></span>${id?delBtn('delpurchase'):''}<button class="btn primary" data-act="savepurchase">Lưu</button>`);
 }
 async function savePurchase(btn){
@@ -961,11 +1019,12 @@ async function savePurchase(btn){
   const ok=await saving2(btn,async()=>{
     let sid=pd.sourceId;
     if(sid==='__new'){const sr=db.collection('sources').doc();sid=sr.id;await sr.set(stamp({name:pd.srcName.trim(),group:pd.srcGroup,active:true,o:900}));pd.sourceId=sid}
-    await ref.set(stamp({date:pd.date,sourceId:sid,amount:pd.amount,note:pd.note||''}));
+    await ref.set(stamp({date:pd.date,sourceId:sid,amount:pd.amount,note:pd.note||'',credit:!!pd.credit,pays:pd.credit?pd.pays||[]:[]}));
     if(pd.oldYm&&pd.oldYm!==ym)await db.collection('m/'+pd.oldYm+'/purchases').doc(pd.id).delete();
   });
   if(!ok)return;
   if(ym!==state.ym&&state.view==='nhap'){state.ym=ym;focusMonths()}else watch(ym);
+  if(state.view==='sono'){fetchedD[ym]=0;loadDebts()}
   closeSheet();toast('Đã lưu khoản nhập '+money(pd.amount));
 }
 
@@ -1099,8 +1158,8 @@ function buildSheets(yms){
   const dish=l=>`${l.qty>1?l.qty+' × ':''}${l.name||'Món khác'}${l.note?' ['+l.note+']':''}`;
   const od=[['Ngày giao','Thứ','Giờ','Khách','Liên hệ','Nhận hàng','Địa chỉ','Món','Nhóm','Tổng tiền','Tiền mặt','Chuyển khoản','Chưa ghi hình thức','Còn thu','Trạng thái','Ghi chú']];
   const rt=[['Ngày','Sản phẩm','Nhóm','Số lượng','Đơn giá','Thành tiền']];
-  const pu=[['Ngày','Nguồn nhập','Nhóm','Số tiền','Ghi chú']];
-  let sum=[0,0,0,0,0],rsum=0,cksum=0,psum=0;
+  const pu=[['Ngày','Nguồn nhập','Nhóm','Số tiền','Còn nợ','Ghi chú']];
+  let sum=[0,0,0,0,0],rsum=0,cksum=0,psum=0,pdebt=0;
   for(const ym of yms){
     const m=data(ym);
     for(const[,o]of Object.entries(m.orders).sort(orderSort)){
@@ -1114,11 +1173,11 @@ function buildSheets(yms){
       for(const[k,g]of[['otherBanh','Bánh'],['otherHoa','Hoa'],['otherCombo','Combo']])if(doc[k]){rt.push([dmy(d),'Bán khác',g,'','',doc[k]]);rsum+=doc[k]}
       cksum+=doc.ck||0;
     }
-    for(const[,e]of Object.entries(m.purchases).sort((a,b)=>a[1].date<b[1].date?-1:1)){const s=P.sources[e.sourceId];pu.push([dmy(e.date),s?.name||'',COST[s?.group]||'',e.amount,e.note||'']);psum+=e.amount||0}
+    for(const[,e]of Object.entries(m.purchases).sort((a,b)=>a[1].date<b[1].date?-1:1)){const s=P.sources[e.sourceId];const pl=purchaseLeft(e);pu.push([dmy(e.date),s?.name||'',COST[s?.group]||'',e.amount,pl,e.note||'']);psum+=e.amount||0;pdebt+=pl}
   }
   od.push({total:true,cells:['Tổng (không tính đơn hủy)','','','','','','','','',...sum]});
   rt.push({total:true,cells:['Tổng bán lẻ','','','','',rsum]},{total:true,cells:['Trong đó chuyển khoản','','','','',cksum]});
-  pu.push({total:true,cells:['Tổng tiền nhập','','',psum]});
+  pu.push({total:true,cells:['Tổng tiền nhập','','',psum,pdebt]});
   return[['Đơn hàng',od],['Bán lẻ',rt],['Nhập hàng',pu]];
 }
 function exportXlsx(yms,name){
@@ -1143,23 +1202,27 @@ document.addEventListener('click',async ev=>{
    case'ptab':state.priceTab=k;render();break;
    case'export':exportXlsx(Array.from({length:12},(_,i)=>state.repYear+'-'+pad(i+1)),'huyen-cake-'+state.repYear);break;
    case'order':openOrder(id,ym);break;
-   case'purchase':openPurchase(id,ym);break;
+   case'purchase':openPurchase(id,ym,b.dataset.credit==='1');break;
    case'product':openProduct(id);break;
    case'customer':openCustomer(id);break;
-   case'pay':openPay(id,ym);break;
+   case'pay':openPay(b.dataset.kind,id,ym);break;
    case'source':openSource(id);break;
    case'close':closeSheet();break;
    case'done':{const ref=db.collection('m/'+ym+'/orders').doc(id);b.disabled=true;try{await write(()=>ref.update(stamp({status:'xong'})));toast('Đã chuyển sang Đã giao')}catch(e){toast(dbFail(e));b.disabled=false}break}
    case'payby':{
-     const o=data(payT.ym).orders[payT.id];if(!o)break;
-     const payments=[...paysOf(o).map(p=>({...p})),{date:workDay(),amount:orderLeft(o),method:k}];
-     const ok=await saving2(b,()=>db.collection('m/'+payT.ym+'/orders').doc(payT.id).update(stamp({payments})));
-     if(ok){closeSheet();toast('Đã ghi thu đủ bằng '+METHOD[k].toLowerCase())}break}
+     const{kind,id:pid,ym:py,left}=payT,e=data(py)[kind][pid],amount=parseMoney($('pay-amt').value);
+     if(!e)break;
+     if(!(amount>0))return sheetErr('Hãy nhập số tiền.');
+     if(amount>left)return sheetErr('Số tiền lớn hơn số còn lại '+money(left)+'.');
+     const add={date:workDay(),amount,method:k},patch=kind==='orders'?{payments:[...paysOf(e).map(p=>({...p})),add]}:{pays:[...(e.pays||[]),add]};
+     const ok=await saving2(b,()=>db.collection('m/'+py+'/'+kind).doc(pid).update(stamp(patch)));
+     if(ok){data(py)[kind][pid]={...e,...patch};closeSheet();toast('Đã ghi '+money(amount)+' bằng '+METHOD[k].toLowerCase())}break}
    case'armdel':{
      if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Bấm lần nữa để xóa';setTimeout(()=>{if(b.isConnected){b.classList.remove('armed');b.textContent='Xóa'}},4000);break}
      b.disabled=true;
      try{await write(()=>db.collection('m/'+ym+'/'+b.dataset.kind).doc(id).delete());toast('Đã xóa')}catch(e){toast(dbFail(e));b.disabled=false}break}
    case'ship':setShip(k==='1');break;
+   case'credit':pd.credit=k==='1';b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));break;
    case'pickcust':{const c=P.customers[id];od.customerId=id;od.customer=c.name||'';od.contact=c.contact||'';$('o-customer').value=od.customer;$('o-contact').value=od.contact;custSug();addrChips();break}
    case'useaddr':{const c=P.customers[od.customerId||customerKey(od.customer,od.contact)],i=+b.dataset.i;if(i<0){setShip(false);od.address='';$('o-address').value=''}else{setShip(true);od.address=c.addresses[i];$('o-address').value=od.address}break}
    case'addpay':od.payments.push({date:workDay(),amount:orderLeft(od),method:'tm'});$('pays').innerHTML=paysHtml();odSum();break;
@@ -1301,6 +1364,7 @@ async function start(fs,auth,u){
   backfill(fs);
   focusMonths();armLoadTimer();render();
   if(state.view==='baocao')loadYear();
+  if(state.view==='sono')loadDebts();
 }
 /* Một lần duy nhất: tạo hồ sơ khách từ các đơn đã nhập trước khi có mục Khách hàng. */
 async function backfill(fs){
